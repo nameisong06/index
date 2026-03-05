@@ -273,31 +273,6 @@ body::before {
   </div>
 </div>
 
-<script>
-// ── 비밀번호 설정 ──
-// 아래 YOUR_PASSWORD 부분을 원하는 비밀번호로 바꾸세요
-const DASHBOARD_PASSWORD = '0368';
-
-function checkPassword(){
-  const input = document.getElementById('pwInput').value;
-  const errEl = document.getElementById('pwError');
-  if(input === DASHBOARD_PASSWORD){
-    const lock = document.getElementById('lockScreen');
-    lock.style.transition = 'opacity .4s';
-    lock.style.opacity = '0';
-    setTimeout(()=>{ lock.style.display='none'; }, 400);
-  } else {
-    errEl.textContent = '❌ 비밀번호가 올바르지 않습니다';
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwInput').style.borderColor = '#ee2b2b';
-    setTimeout(()=>{
-      errEl.textContent='';
-      document.getElementById('pwInput').style.borderColor='#2e3450';
-    }, 2000);
-  }
-}
-</script>
-
 <div class="wrap">
 
   <!-- HEADER -->
@@ -446,6 +421,29 @@ function checkPassword(){
 </div>
 
 <script>
+// ── 비밀번호 ──
+// 아래 YOUR_PASSWORD 를 원하는 비밀번호로 바꾸세요
+const DASHBOARD_PASSWORD = '0368';
+
+function checkPassword(){
+  const input = document.getElementById('pwInput').value;
+  const errEl = document.getElementById('pwError');
+  if(input === DASHBOARD_PASSWORD){
+    const lock = document.getElementById('lockScreen');
+    lock.style.transition = 'opacity .4s';
+    lock.style.opacity = '0';
+    setTimeout(()=>{ lock.style.display='none'; }, 400);
+  } else {
+    errEl.textContent = '❌ 비밀번호가 올바르지 않습니다';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').style.borderColor = '#ee2b2b';
+    setTimeout(()=>{
+      errEl.textContent='';
+      document.getElementById('pwInput').style.borderColor='#2e3450';
+    }, 2000);
+  }
+}
+
 // ── RAW DATA (기본 내장 데이터 — CSV 업로드 시 교체됨) ──
 let RAW = [
 ["2026/1/13","네이버","오늘끝딜","풀무원","2L",4170,12,8340,""],
@@ -1206,3 +1204,28 @@ function resetAllState(){
   document.getElementById('dateTo').max='';
   Object.values(charts).forEach(c=>c.destroy());
   charts={};
+}
+
+function updateDateRange(){
+  const allDates = RAW.map(r=>r[0]).sort();
+  function toInputDate(d){ const p=d.split('/'); return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; }
+  const minD = toInputDate(allDates[0]);
+  const maxD = toInputDate(allDates[allDates.length-1]);
+  document.getElementById('dateFrom').min = minD;
+  document.getElementById('dateFrom').max = maxD;
+  document.getElementById('dateTo').min   = minD;
+  document.getElementById('dateTo').max   = maxD;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>{ t.style.display='none'; },3500);
+}
+
+// ── BOOT ──
+initFilters();
+render();
+</script>
+</body>
+</html>
