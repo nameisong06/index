@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경쟁브랜드 행사 가격 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0d0f14;
+  --surface: #151821;
+  --surface2: #1c2030;
+  --border: #252a3a;
+  --border2: #2e3450;
+  --text: #e2e6f3;
+  --muted: #5a6080;
+  --muted2: #7a82a0;
+
+  --ch-naver:  #03c75a;
+  --ch-coupang: #ee2b2b;
+  --ch-11st:   #ff6000;
+  --ch-gmarket: #4169e1;
+  --ch-toss:   #0064ff;
+  --ch-kakao:  #f9e000;
+  --ch-lotte:  #ed174c;
+  --ch-other:  #888;
+
+  --size-2l:    #60a5fa;
+  --size-500:   #34d399;
+  --size-330:   #f472b6;
+  --size-1l:    #fbbf24;
+  --size-200:   #a78bfa;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* subtle dot grid bg */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(circle, #ffffff08 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index:0;
+}
+
+.wrap { max-width:1400px; margin:0 auto; padding:32px 24px; position:relative; z-index:1; }
+
+/* ── HEADER ── */
+.header {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  margin-bottom:32px; gap:16px; flex-wrap:wrap;
+}
+.header-left h1 {
+  font-size:22px; font-weight:700; letter-spacing:-0.5px;
+  color:#fff; margin-bottom:4px;
+}
+.header-left p { font-size:12px; color:var(--muted2); font-family:'DM Mono',monospace; }
+
+/* ── FILTERS ── */
+.filters {
+  display:flex; flex-wrap:wrap; gap:20px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:14px; padding:20px 24px;
+  margin-bottom:24px;
+  box-shadow: 0 0 0 1px rgba(96,165,250,0.06), 0 4px 24px rgba(0,0,0,0.3);
+}
+.filter-group { display:flex; flex-direction:column; gap:8px; }
+.filter-label {
+  font-size:11px; color:#fff; font-family:'DM Mono',monospace;
+  letter-spacing:2px; text-transform:uppercase; font-weight:600;
+  display:flex; align-items:center; gap:7px;
+}
+.filter-label::before {
+  content:''; display:inline-block; width:7px; height:7px; border-radius:50%;
+}
+.filter-group:nth-child(1) .filter-label::before { background:#03c75a; box-shadow:0 0 7px #03c75a99; }
+.filter-group:nth-child(2) .filter-label::before { background:#60a5fa; box-shadow:0 0 7px #60a5fa99; }
+.filter-group:nth-child(3) .filter-label::before { background:#fbbf24; box-shadow:0 0 7px #fbbf2499; }
+.filter-pills { display:flex; flex-wrap:wrap; gap:6px; }
+.pill {
+  padding:6px 14px; border-radius:20px; border:1.5px solid var(--border2);
+  background:transparent; color:var(--muted2);
+  font-size:12.5px; font-weight:500; cursor:pointer; transition:all .15s;
+  white-space:nowrap;
+}
+.pill:hover { border-color:var(--muted2); color:var(--text); transform:translateY(-1px); }
+.pill.on { color:#fff; border-color:transparent; box-shadow:0 2px 10px rgba(0,0,0,0.4); }
+
+/* channel colors */
+.pill[data-ch="전체"].on, .pill[data-sz="전체"].on { background:#334; border-color:var(--border2); }
+.pill[data-ch="네이버"].on  { background:var(--ch-naver);  }
+.pill[data-ch="쿠팡"].on    { background:var(--ch-coupang); }
+.pill[data-ch="11번가"].on  { background:var(--ch-11st);   }
+.pill[data-ch="지마켓"].on  { background:var(--ch-gmarket); }
+.pill[data-ch="토스"].on    { background:var(--ch-toss);   }
+.pill[data-ch="카카오"].on  { background:var(--ch-kakao); color:#1a1a1a; }
+.pill[data-ch="롯데온"].on  { background:var(--ch-lotte);  }
+
+.pill[data-sz="2L"].on    { background:var(--size-2l);   color:#0a0a14; }
+.pill[data-sz="500mL"].on { background:var(--size-500);  color:#0a0a14; }
+.pill[data-sz="330mL"].on { background:var(--size-330);  color:#fff; }
+.pill[data-sz="1L"].on    { background:var(--size-1l);   color:#0a0a14; }
+.pill[data-sz="200mL"].on { background:var(--size-200);  color:#fff; }
+
+/* ── KPI CARDS ── */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+@media(max-width:900px){ .kpi-row{grid-template-columns:repeat(2,1fr);} }
+
+.kpi {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:20px;
+  position:relative; overflow:hidden;
+}
+.kpi::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+.kpi:nth-child(1)::after { background:linear-gradient(90deg,#60a5fa,#3b82f6); }
+.kpi:nth-child(2)::after { background:linear-gradient(90deg,#34d399,#10b981); }
+.kpi:nth-child(3)::after { background:linear-gradient(90deg,#f472b6,#ec4899); }
+.kpi:nth-child(4)::after { background:linear-gradient(90deg,#fbbf24,#f59e0b); }
+
+.kpi-label { font-size:11px; color:var(--muted2); font-family:'DM Mono',monospace; letter-spacing:1px; margin-bottom:8px; }
+.kpi-value { font-size:28px; font-weight:700; letter-spacing:-1px; color:#fff; }
+.kpi-sub   { font-size:11px; color:var(--muted); margin-top:4px; }
+
+/* ── GRID LAYOUT ── */
+.main-grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+@media(max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:20px;
+}
+.card.wide { grid-column:1/-1; }
+
+.card-title {
+  font-size:11px; color:var(--muted2); font-family:'DM Mono',monospace;
+  letter-spacing:1.5px; text-transform:uppercase; margin-bottom:16px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+.chart-box { position:relative; height:240px; }
+.chart-box.tall { height:300px; }
+
+/* ── PRICE TABLE ── */
+.price-table-wrap { overflow-x:auto; margin-top:4px; }
+.price-table {
+  width:100%; border-collapse:collapse;
+  font-size:12.5px;
+}
+.price-table th {
+  background:var(--surface2); color:var(--muted2);
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px;
+  padding:9px 12px; text-align:left; border-bottom:1px solid var(--border2);
+  white-space:nowrap; font-weight:500;
+}
+.price-table td {
+  padding:9px 12px; border-bottom:1px solid var(--border);
+  white-space:nowrap; vertical-align:middle;
+}
+.price-table tr:last-child td { border-bottom:none; }
+.price-table tr:hover td { background:var(--surface2); }
+
+.price-table td.num {
+  font-family:'DM Mono',monospace; font-size:13px; color:#fff;
+  text-align:right;
+}
+.price-table td.date { color:var(--muted2); font-family:'DM Mono',monospace; font-size:11px; }
+
+/* channel badge */
+.ch-badge {
+  display:inline-block; padding:2px 8px; border-radius:10px;
+  font-size:10.5px; font-weight:600; white-space:nowrap;
+}
+
+/* size badge */
+.sz-badge {
+  display:inline-block; padding:2px 7px; border-radius:6px;
+  font-size:10.5px; font-weight:600;
+}
+
+.no-data {
+  color:var(--muted); text-align:center; padding:48px;
+  font-family:'DM Mono',monospace; font-size:12px;
+}
+
+/* legend dot */
+.ldot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+
+/* scrollable table container */
+.scroll-table { max-height:380px; overflow-y:auto; }
+.scroll-table::-webkit-scrollbar { width:4px; }
+.scroll-table::-webkit-scrollbar-track { background:transparent; }
+.scroll-table::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes fadeUp { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
+</style>
+</head>
+<body>
+
+<!-- ── 비밀번호 잠금 화면 ── -->
+<div id="lockScreen" style="
+  position:fixed;inset:0;z-index:99999;
+  background:#0d0f14;
+  display:flex;align-items:center;justify-content:center;
+">
+  <div style="
+    background:#151821;border:1px solid #2e3450;border-radius:20px;
+    padding:48px 40px;width:100%;max-width:380px;
+    text-align:center;
+    box-shadow:0 0 0 1px rgba(96,165,250,0.06),0 20px 60px rgba(0,0,0,0.6);
+  ">
+    <div style="font-size:36px;margin-bottom:16px;">🔒</div>
+    <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:-0.5px;">
+      경쟁브랜드 대시보드
+    </div>
+    <div style="font-size:12px;color:#5a6080;font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:32px;">
+      접근하려면 비밀번호를 입력하세요
+    </div>
+    <input
+      id="pwInput"
+      type="password"
+      placeholder="비밀번호 입력"
+      onkeydown="if(event.key==='Enter')checkPassword()"
+      style="
+        width:100%;background:#0d0f14;
+        border:1.5px solid #2e3450;border-radius:10px;
+        padding:13px 16px;color:#e2e6f3;
+        font-family:'DM Mono',monospace;font-size:14px;
+        outline:none;box-sizing:border-box;
+        text-align:center;letter-spacing:3px;
+        margin-bottom:12px;
+        transition:border-color .2s;
+      "
+      onfocus="this.style.borderColor='#60a5fa'"
+      onblur="this.style.borderColor='#2e3450'"
+    >
+    <div id="pwError" style="
+      font-size:11px;color:#ee2b2b;
+      font-family:'DM Mono',monospace;
+      margin-bottom:12px;height:16px;
+    "></div>
+    <button onclick="checkPassword()" style="
+      width:100%;background:linear-gradient(135deg,#60a5fa,#3b82f6);
+      border:none;border-radius:10px;
+      padding:13px;color:#fff;
+      font-family:'Noto Sans KR',sans-serif;font-weight:700;
+      font-size:14px;cursor:pointer;
+      transition:opacity .2s;
+    "
+    onmouseover="this.style.opacity='.85'"
+    onmouseout="this.style.opacity='1'"
+    >입장하기</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🥤 경쟁브랜드 행사 가격 모니터링</h1>
+      <p id="headerDateRange">2026.01.13 ~ 2026.03.04 · 기본 데이터</p>
+    </div>
+    <!-- CSV 드래그앤드롭 존 -->
+    <div id="dropZone" style="
+      border:2px dashed var(--border2);border-radius:12px;
+      padding:14px 24px;cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;gap:12px;
+      background:var(--surface);min-width:260px;position:relative;
+    "
+    ondragover="event.preventDefault();this.style.borderColor='#60a5fa';this.style.background='#1a2040';"
+    ondragleave="this.style.borderColor='';this.style.background='var(--surface)';"
+    ondrop="handleDrop(event)"
+    onclick="document.getElementById('csvFileInput').click()"
+    >
+      <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileInput(this)">
+      <div style="font-size:22px;line-height:1;">📂</div>
+      <div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--text);" id="dropLabel">CSV 파일 드래그 또는 클릭</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">구글시트 → 파일 → 다운로드 → CSV</div>
+      </div>
+      <div id="dropSpinner" style="display:none;width:16px;height:16px;border:2px solid #60a5fa;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;margin-left:auto;flex-shrink:0;"></div>
+    </div>
+  </div>
+
+  <!-- 업로드 성공 토스트 -->
+  <div id="toast" style="
+    display:none;position:fixed;top:24px;right:24px;z-index:9999;
+    background:#1c2030;border:1px solid #34d399;border-radius:10px;
+    padding:12px 20px;font-size:13px;color:#34d399;
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);
+    animation:fadeUp .3s ease;
+  "></div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">채널</div>
+      <div class="filter-pills" id="chFilter"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">용량</div>
+      <div class="filter-pills" id="szFilter"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">브랜드</div>
+      <div class="filter-pills" id="brFilter"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">기간</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <input type="date" id="dateFrom" style="background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;padding:5px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;cursor:pointer;" onchange="onDateChange()">
+        <span style="color:var(--muted);font-size:12px;">~</span>
+        <input type="date" id="dateTo" style="background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;padding:5px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;cursor:pointer;" onchange="onDateChange()">
+        <div class="pill" style="font-size:11px;padding:4px 10px;" onclick="resetDate()">초기화</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="kpi-label">총 행사 건수</div><div class="kpi-value" id="kpi1">—</div><div class="kpi-sub" id="kpi1s"></div></div>
+    <div class="kpi"><div class="kpi-label">최저 팩단가</div><div class="kpi-value" id="kpi3">—</div><div class="kpi-sub" id="kpi3s"></div></div>
+    <div class="kpi" style="padding:0;overflow:hidden;">
+      <div style="padding:16px 20px 8px;border-bottom:1px solid var(--border)">
+        <div class="kpi-label">용량·단량별 평균 팩단가</div>
+      </div>
+      <div id="kpiSzTable" style="padding:8px 0;"></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="main-grid">
+    <!-- 용량별 평균 팩단가 (단순) -->
+    <div class="card">
+      <div class="card-title">용량별 평균 팩단가</div>
+      <div class="chart-box"><canvas id="szChart"></canvas></div>
+    </div>
+    <!-- 브랜드별 팩단가 추이 -->
+    <div class="card wide">
+      <div class="card-title">
+        브랜드별 팩단가 추이
+        <span style="font-size:10px;color:var(--muted)">복수 선택 가능 · 용량별 라인</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="brandPickRow"></div>
+      <div class="chart-box tall"><canvas id="trendChart"></canvas></div>
+    </div>
+    <!-- 용량·단량별 팩단가 추이 -->
+    <div class="card wide">
+      <div class="card-title">
+        용량·단량별 팩단가 추이
+        <span style="font-size:10px;color:var(--muted)">보고 싶은 단량 선택</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="szQtyPickRow"></div>
+      <div class="chart-box tall"><canvas id="szQtyTrendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 통합 섹션: 매트릭스 + 상세 내역 -->
+  <div class="card wide" style="margin-bottom:16px;">
+    <!-- 섹션 탭 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div class="card-title" style="margin-bottom:0">상세 행사 내역 &amp; 채널×용량 매트릭스</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <!-- 용량 필터 -->
+        <span style="font-size:10px;color:var(--muted2);font-family:'DM Mono',monospace;letter-spacing:1px;">용량</span>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;" id="tableszFilter"></div>
+      </div>
+    </div>
+
+    <!-- 채널×용량 매트릭스 -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:8px;">CHANNEL × SIZE MATRIX</div>
+      <div id="matrixTable" style="overflow-x:auto;"></div>
+    </div>
+
+    <!-- 구분선 -->
+    <div style="height:1px;background:var(--border2);margin-bottom:16px;"></div>
+
+    <!-- 상세 내역 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px;">DETAIL RECORDS</div>
+      <span id="tableCount" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div class="price-table-wrap scroll-table">
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>날짜</th><th>채널</th><th>구좌</th><th>브랜드</th>
+            <th>용량 (수량)</th>
+            <th style="text-align:right">팩단가</th>
+            <th style="text-align:right">금액</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody id="detailBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── 비밀번호 ──
+// 아래 YOUR_PASSWORD 를 원하는 비밀번호로 바꾸세요
+const DASHBOARD_PASSWORD = 'YOUR_PASSWORD';
+
+function checkPassword(){
+  const input = document.getElementById('pwInput').value;
+  const errEl = document.getElementById('pwError');
+  if(input === DASHBOARD_PASSWORD){
+    const lock = document.getElementById('lockScreen');
+    lock.style.transition = 'opacity .4s';
+    lock.style.opacity = '0';
+    setTimeout(()=>{ lock.style.display='none'; }, 400);
+  } else {
+    errEl.textContent = '❌ 비밀번호가 올바르지 않습니다';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').style.borderColor = '#ee2b2b';
+    setTimeout(()=>{
+      errEl.textContent='';
+      document.getElementById('pwInput').style.borderColor='#2e3450';
+    }, 2000);
+  }
+}
+
+// ── RAW DATA (기본 내장 데이터 — CSV 업로드 시 교체됨) ──
+let RAW = [
+["2026/1/13","네이버","오늘끝딜","풀무원","2L",4170,12,8340,""],
+["2026/1/13","쿠팡","골박","삼다수","2L",6155,12,12310,""],
+["2026/1/13","쿠팡","골박","지리산수","2L",2737,18,8210,""],
+["2026/1/14","토스","하루특가","마신다","2L",2475,24,9900,""],
+["2026/1/14","쿠팡","골박","동원샘물","500mL",3320,60,9960,""],
+["2026/1/14","쿠팡","골박","마신다","2L",2438,24,9750,""],
+["2026/1/14","쿠팡","골박","하늘샘","2L",3000,12,6000,""],
+["2026/1/14","11번가","시선집중","마신다","2L",2475,24,9900,""],
+["2026/1/14","지마켓","슈퍼딜","마신다","2L",2170,24,8680,"팩당 정산가 2100원대(브랜드데이)"],
+["2026/1/14","지마켓","슈퍼딜","라인바싸","500mL",5985,40,11970,"정산가 9456"],
+["2026/1/14","카카오","톡딜","라인바싸","500mL",5950,40,11900,"탄산수"],
+["2026/1/15","토스","하루특가","동원샘물","1L",4990,24,9980,""],
+["2026/1/15","쿠팡","골박","풀무원","2L",2940,24,11760,""],
+["2026/1/15","지마켓","슈퍼딜","빅토리아","500mL",6615,40,13230,""],
+["2026/1/15","지마켓","슈퍼딜","웅진","500mL",3465,40,6930,""],
+["2026/1/15","네이버","오늘끝딜","지리산수","2L",3025,12,6050,""],
+["2026/1/16","토스","하루특가","빅토리아","500mL",6950,40,13900,"탄산수"],
+["2026/1/16","토스","하루특가","웅진","2L",2745,12,5490,""],
+["2026/1/16","쿠팡","골박","지리산수","500mL",3860,40,7720,""],
+["2026/1/16","지마켓","슈퍼딜","화인바이오","2L",2940,24,11760,""],
+["2026/1/16","11번가","쇼킹딜","지리산물하나","2L",2800,24,11200,""],
+["2026/1/16","네이버","오늘끝딜","자연담","2L",2790,12,5580,""],
+["2026/1/19","쿠팡","골박","산수","500mL",3210,40,6420,""],
+["2026/1/19","쿠팡","골박","웅진","330mL",7870,20,7870,"탄산수"],
+["2026/1/19","토스","하루특가","프레시웰","2L",2975,24,11900,""],
+["2026/1/19","쿠팡","골박","몽베스트","1L",5490,24,10980,""],
+["2026/1/19","네이버","오늘끝딜","몽베스트","1L",4950,24,9900,""],
+["2026/1/19","네이버","오늘끝딜","자연담","2L",2257,18,6770,""],
+["2026/1/21","토스","하루특가","삼다수","2L",5980,12,11960,""],
+["2026/1/21","지마켓","슈퍼딜","삼다수","2L",4950,12,9900,""],
+["2026/1/21","쿠팡","골박","아쿠아시스","2L",2370,24,9480,""],
+["2026/1/21","네이버","오늘끝딜","삼다수","2L",4925,12,9850,""],
+["2026/1/21","네이버","오늘끝딜","삼다수","1L",4607,36,13820,""],
+["2026/1/22","쿠팡","골박","빅토리아","500mL",8325,24,9990,"탄산수"],
+["2026/1/22","지마켓","슈퍼딜","아이시스","2L",3950,12,7900,""],
+["2026/1/22","11번가","쇼킹딜","삼다수","2L",5740,12,11480,""],
+["2026/1/23","토스","하루특가","라인바싸","500mL",5950,40,11900,"탄산수"],
+["2026/1/23","쿠팡","골박","백산수","330mL",7075,40,14150,""],
+["2026/1/23","지마켓","슈퍼딜","아이시스","330mL",6233,60,18700,""],
+["2026/1/25","네이버","오늘끝딜","자연담","500mL",3385,40,6770,""],
+["2026/1/25","네이버","오늘끝딜","삼다수","2L",5200,12,10400,""],
+["2026/1/25","롯데온","딜크릿","아이시스","200mL",5940,40,7920,""],
+["2026/1/26","토스","하루특가","에브리워터","500mL",3550,40,7100,""],
+["2026/1/26","쿠팡","골박","삼다수","2L",5480,24,21920,""],
+["2026/1/27","지마켓","슈퍼딜","삼다수","500mL",7210,40,14420,""],
+["2026/1/27","네이버","오늘끝딜","지리산수","2L",3025,12,6050,""],
+["2026/1/27","네이버","오늘끝딜","빅토리아","500mL",8630,20,8630,"탄산수"],
+["2026/1/28","쿠팡","골박","풀무원","500mL",3940,40,7880,""],
+["2026/1/28","쿠팡","골박","삼다수","500mL",8200,40,16400,""],
+["2026/1/28","11번가","시선집중","삼다수","500mL",7460,40,14920,""],
+["2026/1/28","지마켓","슈퍼딜","삼다수","500mL",7200,40,14400,""],
+["2026/1/29","토스","하루특가","삼다수","500mL",7990,40,15980,""],
+["2026/1/29","쿠팡","골박","삼다수","2L",5680,18,17040,""],
+["2026/1/30","네이버","오늘끝딜","자연담","2L",2200,18,6600,""],
+["2026/1/30","네이버","오늘끝딜","자연담","500mL",4075,40,8150,""],
+["2026/2/3","쿠팡","골박","삼다수","500mL",7460,40,14920,""],
+["2026/2/3","카카오","톡딜","삼다수","500mL",7460,40,14920,""],
+["2026/2/3","11번가","시선집중","삼다수","500mL",7460,40,14920,""],
+["2026/2/3","지마켓","슈퍼딜","삼다수","500mL",7210,40,14420,""],
+["2026/2/4","쿠팡","골박","삼다수","2L",5480,24,21920,""],
+["2026/2/5","네이버","오늘끝딜","자연담","2L",2310,18,6930,""],
+["2026/2/5","쿠팡","골박","빅토리아","500mL",8325,24,9990,"탄산수"],
+["2026/2/6","토스","하루특가","아이시스","2L",3950,12,7900,""],
+["2026/2/6","지마켓","슈퍼딜","아이시스","2L",3950,12,7900,""],
+["2026/2/6","쿠팡","골박","백산수","2L",5983,18,17950,""],
+["2026/2/7","지마켓","슈퍼딜","빅토리아","500mL",7960,40,15920,"탄산수"],
+["2026/2/9","쿠팡","골박","풀무원","2L",2940,24,11760,""],
+["2026/2/9","네이버","오늘끝딜","자연담","2L",2310,18,6930,""],
+["2026/2/10","토스","하루특가","에브리워터","500mL",3550,40,7100,""],
+["2026/2/10","11번가","시선집중","삼다수","2L",5340,12,10680,""],
+["2026/2/10","지마켓","슈퍼딜","삼다수","2L",5200,12,10400,""],
+["2026/2/12","쿠팡","골박","삼다수","2L",6480,30,32400,""],
+["2026/2/12","쿠팡","골박","동원","2L",3370,24,13480,""],
+["2026/2/13","쿠팡","골박","빅토리아","500mL",10917,24,13100,"탄산수"],
+["2026/2/13","쿠팡","골박","마신다","2L",3278,24,13110,""],
+["2026/2/13","쿠팡","골박","산수","1L",6330,24,12660,""],
+["2026/2/19","쿠팡","골박","삼다수","2L",6220,24,24880,""],
+["2026/2/19","쿠팡","골박","백산수","1L",7075,40,14150,""],
+["2026/2/19","11번가","시선집중","라인바싸","500mL",5670,40,11340,""],
+["2026/2/20","쿠팡","골박","아쿠아시스","2L",3160,18,9480,""],
+["2026/2/23","쿠팡","골박","몽베스트","330mL",5450,40,10900,""],
+["2026/2/23","쿠팡","골박","웅진","2L",3280,24,13120,""],
+["2026/2/23","지마켓","슈퍼딜","아이시스","2L",4475,24,17900,""],
+["2026/2/24","쿠팡","골박","웅진","330mL",7950,20,7950,"탄산수"],
+["2026/2/24","지마켓","슈퍼딜","삼다수","2L",5425,24,21700,""],
+["2026/2/24","지마켓","슈퍼딜","빅토리아","500mL",7960,40,15920,"탄산수"],
+["2026/2/24","네이버","오늘끝딜","삼다수","330mL",7700,40,15400,""],
+["2026/2/24","네이버","오늘끝딜","자연담","2L",2935,12,5870,""],
+["2026/2/25","토스","하루특가","웅진","2L",2950,12,5900,""],
+["2026/2/25","네이버","오늘끝딜","풀무원","2L",3185,12,6370,""],
+["2026/2/26","쿠팡","골박","백산수","2L",5983,18,17950,""],
+["2026/2/26","쿠팡","골박","빅토리아","500mL",11900,20,11900,"탄산수"],
+["2026/2/27","쿠팡","골박","동원","2L",3400,24,13600,""],
+["2026/2/27","쿠팡","골박","빅토리아","500mL",11890,20,11890,"탄산수"],
+["2026/2/27","네이버","오늘끝딜","삼다수","500mL",8450,40,16900,""],
+["2026/3/3","네이버","오늘끝딜","동원","500mL",3990,60,11970,""],
+["2026/3/3","쿠팡","골박","동원","500mL",4200,60,12600,""],
+["2026/3/3","카카오","톡딜","풀무원","2L",2975,24,11900,""],
+["2026/3/3","카카오","톡딜","풀무원","500mL",3967,60,11900,""],
+["2026/3/3","카카오","톡딜","풀무원","330mL",3633,60,10900,""],
+["2026/3/3","네이버","오늘끝딜","빅토리아","500mL",8900,20,8900,"탄산수"],
+["2026/3/4","쿠팡","골박","아이시스","330mL",5625,40,11250,""],
+];
+
+// ── COLOR MAPS ──
+const CH_COLOR = {
+  "네이버":"#03c75a","쿠팡":"#ee2b2b","11번가":"#ff6000",
+  "지마켓":"#4169e1","토스":"#0064ff","카카오":"#d4b800",
+  "롯데온":"#ed174c","기타":"#888"
+};
+const SZ_COLOR = {
+  "2L":"#60a5fa","500mL":"#34d399","330mL":"#f472b6",
+  "1L":"#fbbf24","200mL":"#a78bfa"
+};
+
+// ── STATE ──
+let selCh = "전체", selSz = "전체", selBr = "전체";
+let selDateFrom = null, selDateTo = null;
+let charts = {};
+
+// ── HELPERS ──
+function avg(arr){ return arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0; }
+function fmt(n){ return n ? n.toLocaleString()+'원' : '—'; }
+function chColor(ch){ return CH_COLOR[ch]||CH_COLOR["기타"]; }
+function szColor(sz){ return SZ_COLOR[sz]||"#888"; }
+
+// 날짜 문자열을 비교 가능한 형태로 (YYYY/M/D → YYYYMMDD)
+function normDate(s){
+  const p = s.replace(/\./g,'/').split('/');
+  return p[0] + p[1].padStart(2,'0') + p[2].padStart(2,'0');
+}
+
+function filtered(){
+  return RAW.filter(r=>{
+    if(selCh!=="전체" && r[1]!==selCh) return false;
+    if(selSz!=="전체" && r[4]!==selSz) return false;
+    if(selBr!=="전체" && r[3]!==selBr) return false;
+    if(selDateFrom){
+      const df = selDateFrom.replace(/-/g,'');
+      if(normDate(r[0]) < df) return false;
+    }
+    if(selDateTo){
+      const dt = selDateTo.replace(/-/g,'');
+      if(normDate(r[0]) > dt) return false;
+    }
+    return true;
+  });
+}
+
+function onDateChange(){
+  selDateFrom = document.getElementById('dateFrom').value || null;
+  selDateTo   = document.getElementById('dateTo').value   || null;
+  render();
+}
+
+function resetDate(){
+  selDateFrom = null; selDateTo = null;
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value   = '';
+  render();
+}
+
+// ── INIT FILTERS ──
+function initFilters(){
+  const channels = ["전체",...[...new Set(RAW.map(r=>r[1]))].sort()];
+  const sizes    = ["전체","2L","500mL","330mL","1L","200mL"];
+  const brands   = ["전체",...[...new Set(RAW.map(r=>r[3]))].sort()];
+
+  buildPills("chFilter", channels, "ch", ch=>{ selCh=ch; render(); });
+  buildPills("szFilter", sizes,    "sz", sz=>{ selSz=sz; render(); });
+  buildPills("brFilter", brands,   "br", br=>{ selBr=br; render(); });
+
+  updateDateRange();
+}
+
+function buildPills(containerId, items, attr, onClick){
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  items.forEach(item=>{
+    const p = document.createElement('div');
+    p.className = 'pill' + (item==="전체"?' on':'');
+    p.setAttribute('data-'+attr, item);
+    p.textContent = item;
+    p.onclick = ()=>{
+      c.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      onClick(item);
+    };
+    c.appendChild(p);
+  });
+}
+
+// ── RENDER ──
+let selBrandPicks = new Set(); // 복수 선택
+let selTableSz   = '전체';
+let selSzQtyPicks = new Set();
+
+function render(){
+  const data = filtered();
+  updateHeaderDate();
+  renderKPI(data);
+  renderSzChart(data);
+  renderBrandPickRow(data);
+  renderTrend(data);
+  renderSzQtyPickRow(data);
+  renderSzQtyTrend(data);
+  renderTableSzFilter(data);
+  renderMatrix(data);
+  renderTable(data);
+}
+
+function updateHeaderDate(){
+  const dates = RAW.map(r=>r[0]).sort();
+  if(!dates.length) return;
+  const fmt2 = d => d.replace(/[-\/]/g,'.').replace(/\.0(\d)/g,'.$1');
+  const d0 = fmt2(dates[0]);
+  const d1 = fmt2(dates[dates.length-1]);
+  const el = document.getElementById('headerDateRange');
+  const current = el.textContent;
+  const filepart = current.includes('·') ? current.split('·').slice(1).join('·').trim() : '기본 데이터';
+  el.textContent = `${d0} ~ ${d1} · ${filepart}`;
+}
+
+function renderKPI(data){
+  const prices = data.map(r=>r[5]);
+  document.getElementById('kpi1').textContent = data.length;
+  document.getElementById('kpi1s').textContent = `채널 ${[...new Set(data.map(r=>r[1]))].length}개 · 브랜드 ${[...new Set(data.map(r=>r[3]))].length}개`;
+
+  const mn = Math.min(...prices);
+  const mnIdx = prices.indexOf(mn);
+  document.getElementById('kpi3').textContent = fmt(mn);
+  document.getElementById('kpi3s').textContent = data[mnIdx] ? `${data[mnIdx][3]} · ${data[mnIdx][4]} (${data[mnIdx][6]}병) · ${data[mnIdx][1]}` : '';
+
+  // 용량·단량별 평균 팩단가 테이블
+  const sizes = ["2L","500mL","330mL","1L","200mL"].filter(sz=>data.some(r=>r[4]===sz));
+  const rows = sizes.map(sz=>{
+    const items = data.filter(r=>r[4]===sz);
+    const a = avg(items.map(r=>r[5]));
+    // 대표 수량(최빈값)
+    const qtyCounts = {};
+    items.forEach(r=>{ qtyCounts[r[6]]=(qtyCounts[r[6]]||0)+1; });
+    const repQty = Object.entries(qtyCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 20px;border-bottom:1px solid var(--border);">
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="sz-badge" style="background:${szColor(sz)}22;color:${szColor(sz)}">${sz}</span>
+        <span style="font-size:11px;color:var(--muted2)">${repQty}병</span>
+      </span>
+      <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:#fff">${a.toLocaleString()}원</span>
+    </div>`;
+  });
+  document.getElementById('kpiSzTable').innerHTML = rows.join('');
+}
+
+function makeChart(id, config){
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), config);
+}
+
+const chartDefaults = {
+  plugins:{ legend:{ labels:{ color:'#7a82a0', font:{ family:"'DM Mono',monospace", size:11 }, boxWidth:10, padding:12 }}},
+  scales:{
+    x:{ ticks:{ color:'#5a6080', font:{size:11} }, grid:{ color:'#1c2030' } },
+    y:{ ticks:{ color:'#5a6080', font:{size:11} }, grid:{ color:'#1c2030' } }
+  }
+};
+
+function renderChChart(data){
+  const channels = [...new Set(data.map(r=>r[1]))].sort();
+  const avgs = channels.map(ch => avg(data.filter(r=>r[1]===ch).map(r=>r[5])));
+  makeChart('chChart',{
+    type:'bar',
+    data:{
+      labels: channels,
+      datasets:[{ label:'평균 팩단가',
+        data: avgs,
+        backgroundColor: channels.map(ch=>chColor(ch)+'bb'),
+        borderColor: channels.map(ch=>chColor(ch)),
+        borderWidth:1.5, borderRadius:5
+      }]
+    },
+    options:{...chartDefaults, responsive:true, maintainAspectRatio:false,
+      plugins:{...chartDefaults.plugins,
+        tooltip:{ callbacks:{ label: ctx=> ' '+ctx.parsed.y.toLocaleString()+'원' }}
+      }
+    }
+  });
+}
+
+function renderSzChart(data){
+  const sizes = ["2L","500mL","330mL","1L","200mL"].filter(sz=>data.some(r=>r[4]===sz));
+  const avgs  = sizes.map(sz => avg(data.filter(r=>r[4]===sz).map(r=>r[5])));
+  makeChart('szChart',{
+    type:'bar',
+    data:{
+      labels: sizes,
+      datasets:[{
+        label:'평균 팩단가',
+        data: avgs,
+        backgroundColor: sizes.map(sz=>szColor(sz)+'bb'),
+        borderColor: sizes.map(sz=>szColor(sz)),
+        borderWidth:1.5, borderRadius:6,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx=> ` ${ctx.parsed.y.toLocaleString()}원` }}
+      },
+      scales:{
+        x:{ ticks:{ color:'#5a6080', font:{size:12,weight:'600'} }, grid:{ color:'#1c2030' } },
+        y:{ ticks:{ color:'#5a6080', font:{size:10}, callback:v=>v.toLocaleString()+'원' }, grid:{ color:'#1c2030' } }
+      }
+    }
+  });
+}
+
+// 브랜드별 다중선택 색상 팔레트 (브랜드 구분용)
+const brandPalette = [
+  '#f87171','#fb923c','#fbbf24','#a3e635','#34d399',
+  '#22d3ee','#60a5fa','#a78bfa','#e879f9','#f472b6'
+];
+
+function renderBrandPickRow(data){
+  const brands = [...new Set(data.map(r=>r[3]))].sort();
+  // 없어진 브랜드 제거
+  selBrandPicks = new Set([...selBrandPicks].filter(b=>brands.includes(b)));
+
+  const row = document.getElementById('brandPickRow');
+  row.innerHTML = '';
+  brands.forEach((br, i)=>{
+    const isOn = selBrandPicks.has(br);
+    const color = brandPalette[i % brandPalette.length];
+    const b = document.createElement('div');
+    b.className = 'pill';
+    b.textContent = br;
+    if(isOn){
+      b.style.background = color;
+      b.style.borderColor = color;
+      b.style.color = '#0a0a14';
+      b.style.fontWeight = '600';
+    }
+    b.onclick = ()=>{
+      if(selBrandPicks.has(br)) selBrandPicks.delete(br);
+      else selBrandPicks.add(br);
+      renderBrandPickRow(data);
+      renderTrend(filtered());
+    };
+    row.appendChild(b);
+  });
+}
+
+function renderTrend(data){
+  if(charts['trendChart']) charts['trendChart'].destroy();
+  if(selBrandPicks.size === 0){
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    charts['trendChart'] = new Chart(ctx,{
+      type:'line', data:{ labels:[], datasets:[] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ display:false },
+          title:{ display:true, text:'위에서 브랜드를 선택하면 팩단가 추이가 표시됩니다', color:'#5a6080', font:{ size:13 } }
+        },
+        scales:{ x:{ display:false }, y:{ display:false } }
+      }
+    });
+    return;
+  }
+
+  const dates = [...new Set(data.map(r=>r[0]))].sort();
+  const datasets = [];
+  const brands = [...new Set(data.map(r=>r[3]))].sort();
+
+  [...selBrandPicks].forEach(br=>{
+    const brIdx = brands.indexOf(br);
+    const baseColor = brandPalette[brIdx % brandPalette.length];
+    const brData = data.filter(r=>r[3]===br);
+    const sizes = ["2L","500mL","330mL","1L","200mL"].filter(sz=>brData.some(r=>r[4]===sz));
+
+    sizes.forEach((sz, si)=>{
+      const pts = dates.map(d=>{
+        const rows = brData.filter(r=>r[0]===d && r[4]===sz);
+        return rows.length ? avg(rows.map(r=>r[5])) : null;
+      });
+      // 대표 병수
+      const qtyCounts = {};
+      brData.filter(r=>r[4]===sz).forEach(r=>{ qtyCounts[r[6]]=(qtyCounts[r[6]]||0)+1; });
+      const repQty = Object.entries(qtyCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
+      // 같은 브랜드는 같은 계열색, 용량마다 투명도·dash 변화
+      const alpha = Math.max(0.5, 1 - si*0.15);
+      const dash = si===0?[]:[si*4, 3];
+      datasets.push({
+        label: `${br} · ${sz} (${repQty}병)`,
+        data: pts,
+        borderColor: baseColor,
+        backgroundColor: baseColor+'18',
+        borderWidth: 2.5,
+        borderDash: dash,
+        pointRadius: 4, pointHoverRadius: 7,
+        tension: 0.3, spanGaps: true,
+        pointStyle: ['circle','triangle','rect','star'][si%4],
+      });
+    });
+  });
+
+  makeChart('trendChart',{
+    type:'line',
+    data:{ labels: dates.map(d=>d.replace('2026/','').replace(/\//g,'.')), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:'#7a82a0', font:{ family:"'DM Mono',monospace", size:10 }, boxWidth:10, padding:12 }},
+        tooltip:{ callbacks:{ label: ctx=> ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}원` }}
+      },
+      scales:{
+        x:{ ticks:{ color:'#5a6080', font:{size:11} }, grid:{ color:'#1c2030' } },
+        y:{ ticks:{ color:'#5a6080', font:{size:10}, callback:v=>v.toLocaleString()+'원' }, grid:{ color:'#1c2030' } }
+      }
+    }
+  });
+}
+
+// 용량·단량 조합 선택 토글 버튼
+const palette = ['#60a5fa','#93c5fd','#34d399','#6ee7b7','#f472b6','#f9a8d4','#fbbf24','#fde68a','#a78bfa','#c4b5fd'];
+
+function getAllCombos(data){
+  return [...new Set(data.map(r=>`${r[4]}|${r[6]}`))].sort((a,b)=>{
+    const [sa,qa] = a.split('|'); const [sb,qb] = b.split('|');
+    const szOrder = ["2L","1L","500mL","330mL","200mL"];
+    const oi = szOrder.indexOf(sa)-szOrder.indexOf(sb);
+    return oi !== 0 ? oi : Number(qb)-Number(qa);
+  });
+}
+
+function renderSzQtyPickRow(data){
+  const combos = getAllCombos(data);
+  // 필터 바뀌면 없어진 콤보 제거
+  selSzQtyPicks = new Set([...selSzQtyPicks].filter(c=>combos.includes(c)));
+
+  const row = document.getElementById('szQtyPickRow');
+  row.innerHTML = '';
+  combos.forEach((combo, i)=>{
+    const [sz, qty] = combo.split('|');
+    const isOn = selSzQtyPicks.has(combo);
+    const color = palette[i % palette.length];
+    const b = document.createElement('div');
+    b.className = 'pill';
+    b.textContent = `${sz} (${qty}병)`;
+    b.style.transition = 'all .15s';
+    if(isOn){
+      b.style.background = color;
+      b.style.borderColor = color;
+      b.style.color = '#0a0a14';
+    }
+    b.onclick = ()=>{
+      if(selSzQtyPicks.has(combo)) selSzQtyPicks.delete(combo);
+      else selSzQtyPicks.add(combo);
+      renderSzQtyPickRow(filtered());
+      renderSzQtyTrend(filtered());
+    };
+    row.appendChild(b);
+  });
+}
+
+// 용량·단량 조합별 팩단가 추이 — 선택된 것만 표시
+function renderSzQtyTrend(data){
+  if(charts['szQtyTrendChart']) charts['szQtyTrendChart'].destroy();
+  if(selSzQtyPicks.size === 0){
+    // 빈 상태 — 빈 차트 or 안내 텍스트
+    const ctx = document.getElementById('szQtyTrendChart').getContext('2d');
+    charts['szQtyTrendChart'] = new Chart(ctx,{
+      type:'line', data:{ labels:[], datasets:[] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ display:false },
+          title:{ display:true, text:'위의 단량을 선택하면 추이가 표시됩니다', color:'#5a6080', font:{ size:13 } }
+        },
+        scales:{ x:{ display:false }, y:{ display:false } }
+      }
+    });
+    return;
+  }
+
+  const combos = getAllCombos(data).filter(c=>selSzQtyPicks.has(c));
+  const dates  = [...new Set(data.map(r=>r[0]))].sort();
+
+  const datasets = combos.map((combo)=>{
+    const allCombos = getAllCombos(data);
+    const i = allCombos.indexOf(combo);
+    const [sz, qty] = combo.split('|');
+    const color = palette[i % palette.length];
+    const pts = dates.map(d=>{
+      const rows = data.filter(r=>r[0]===d && r[4]===sz && r[6]==qty);
+      return rows.length ? avg(rows.map(r=>r[5])) : null;
+    });
+    return {
+      label: `${sz} (${qty}병)`,
+      data: pts,
+      borderColor: color,
+      backgroundColor: color+'22',
+      borderWidth:2.5, pointRadius:5, pointHoverRadius:7,
+      tension:0.3, spanGaps:true
+    };
+  });
+
+  makeChart('szQtyTrendChart',{
+    type:'line',
+    data:{ labels: dates.map(d=>d.replace('2026/','').replace(/\//g,'.')), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:'#7a82a0', font:{ family:"'DM Mono',monospace", size:11 }, boxWidth:10, padding:12 }},
+        tooltip:{ callbacks:{ label: ctx=> ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}원` }}
+      },
+      scales:{
+        x:{ ticks:{ color:'#5a6080', font:{size:11} }, grid:{ color:'#1c2030' } },
+        y:{ ticks:{ color:'#5a6080', font:{size:10}, callback:v=>v.toLocaleString()+'원' }, grid:{ color:'#1c2030' } }
+      }
+    }
+  });
+}
+
+// 탄산수 여부 판별 (라인바싸, 빅토리아 500mL)
+function isCarbonated(r){
+  return (r[3]==='라인바싸' || r[3]==='빅토리아') && r[4]==='500mL';
+}
+
+// 상세 내역 용량 필터 버튼
+function renderTableSzFilter(data){
+  const sizes = ["전체","2L","500mL","330mL","1L","200mL"].filter(sz=>sz==='전체'||data.some(r=>r[4]===sz));
+  const c = document.getElementById('tableszFilter');
+  c.innerHTML = '';
+  sizes.forEach(sz=>{
+    const p = document.createElement('div');
+    p.className = 'pill' + (sz===selTableSz?' on':'');
+    if(sz===selTableSz && sz!=='전체'){
+      p.style.background=szColor(sz); p.style.color='#0a0a14'; p.style.borderColor='transparent';
+    } else if(sz===selTableSz){
+      p.style.background='#334'; p.style.borderColor='var(--border2)'; p.style.color='#fff';
+    }
+    p.textContent = sz;
+    p.onclick = ()=>{
+      selTableSz = sz;
+      const d = filtered();
+      renderTableSzFilter(d);
+      renderMatrix(d);
+      renderTable(d);
+    };
+    c.appendChild(p);
+  });
+}
+
+function renderMatrix(data){
+  const tData = selTableSz==='전체' ? data : data.filter(r=>r[4]===selTableSz);
+  const channels = [...new Set(tData.map(r=>r[1]))].sort();
+  const sizes = selTableSz==='전체'
+    ? ["2L","500mL","330mL","1L","200mL"].filter(sz=>tData.some(r=>r[4]===sz))
+    : [selTableSz];
+
+  // 용량별 최저가 (채널 간)
+  const minBySize = {};
+  sizes.forEach(sz=>{
+    const vals = channels.map(ch=>{
+      const rows = tData.filter(r=>r[1]===ch && r[4]===sz);
+      return rows.length ? avg(rows.map(r=>r[5])) : Infinity;
+    });
+    minBySize[sz] = Math.min(...vals);
+  });
+
+  let html = `<table class="price-table" style="min-width:100%">
+    <thead><tr>
+      <th>채널</th>
+      <th>브랜드</th>
+      ${sizes.map(sz=>`<th style="text-align:center"><span class="sz-badge" style="background:${szColor(sz)}22;color:${szColor(sz)};border:1px solid ${szColor(sz)}44">${sz}</span></th>`).join('')}
+    </tr></thead>
+    <tbody>`;
+
+  channels.forEach(ch=>{
+    // 이 채널에 등장한 브랜드 목록
+    const brands = [...new Set(tData.filter(r=>r[1]===ch).map(r=>r[3]))].sort();
+    brands.forEach((br, bi)=>{
+      html += `<tr>`;
+      // 채널 셀: 브랜드 수만큼 rowspan
+      if(bi===0){
+        html += `<td rowspan="${brands.length}" style="vertical-align:middle;">
+          <span class="ch-badge" style="background:${chColor(ch)}22;color:${chColor(ch)};border:1px solid ${chColor(ch)}44">${ch}</span>
+        </td>`;
+      }
+      // 브랜드 셀
+      html += `<td style="font-size:12.5px;font-weight:500;color:var(--text)">${br}</td>`;
+      // 용량별 단가
+      sizes.forEach(sz=>{
+        const rows = tData.filter(r=>r[1]===ch && r[3]===br && r[4]===sz);
+        if(rows.length){
+          const a = avg(rows.map(r=>r[5]));
+          const q = Math.round(rows.reduce((s,r)=>s+r[6],0)/rows.length);
+          const isMin = a === minBySize[sz];
+          const carb = rows.some(r=>isCarbonated(r));
+          const cellBg = isMin ? 'rgba(52,211,153,0.15)' : 'transparent';
+          const priceColor = isMin ? '#34d399' : '#fff';
+          const minTag = isMin ? `<span style="font-size:9px;background:#34d39922;color:#34d399;border:1px solid #34d39955;border-radius:4px;padding:1px 5px;margin-left:4px;">최저</span>` : '';
+          const carbTag = carb ? `<span style="font-size:9px;background:#fb923c22;color:#fb923c;border:1px solid #fb923c55;border-radius:4px;padding:1px 5px;margin-left:3px;">탄산</span>` : '';
+          html += `<td style="text-align:center;background:${cellBg};vertical-align:middle;">
+            <span style="font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:${priceColor}">${a.toLocaleString()}</span>${minTag}${carbTag}<br>
+            <span style="font-size:10px;color:var(--muted2)">${q}병</span>
+          </td>`;
+        } else {
+          html += `<td style="text-align:center;color:var(--muted)">—</td>`;
+        }
+      });
+      html += `</tr>`;
+    });
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('matrixTable').innerHTML = html;
+}
+
+function renderTable(data){
+  const tData = selTableSz==='전체' ? data : data.filter(r=>r[4]===selTableSz);
+  const sorted = [...tData].sort((a,b)=>a[0].localeCompare(b[0]));
+  document.getElementById('tableCount').textContent = sorted.length+'건';
+
+  // 용량+수량 조합별 최저가 계산
+  const minMap = {};
+  sorted.forEach(r=>{
+    const key = `${r[4]}|${r[6]}`;
+    if(!minMap[key] || r[5] < minMap[key]) minMap[key] = r[5];
+  });
+
+  document.getElementById('detailBody').innerHTML = sorted.map(r=>{
+    const key = `${r[4]}|${r[6]}`;
+    const isMin = r[5] === minMap[key];
+    const carb = isCarbonated(r);
+    const rowStyle = isMin ? 'background:rgba(52,211,153,0.06);' : '';
+    const priceStyle = isMin ? 'color:#34d399;font-weight:700;' : '';
+    const minBadge = isMin ? `<span style="font-size:9px;background:#34d39922;color:#34d399;border:1px solid #34d39955;border-radius:4px;padding:1px 5px;margin-left:6px;">최저</span>` : '';
+    // 탄산수 브랜드명 오렌지 강조
+    const brStyle = carb ? 'color:#fb923c;font-weight:600;' : 'font-weight:500;';
+    const carbBadge = carb ? `<span style="font-size:9px;background:#fb923c22;color:#fb923c;border:1px solid #fb923c55;border-radius:4px;padding:1px 5px;margin-left:5px;">탄산</span>` : '';
+    return `<tr style="${rowStyle}">
+      <td class="date">${r[0].replace('2026/','').replace(/\//g,'.')}</td>
+      <td><span class="ch-badge" style="background:${chColor(r[1])}22;color:${chColor(r[1])};border:1px solid ${chColor(r[1])}44">${r[1]}</span></td>
+      <td style="color:var(--muted2);font-size:12px">${r[2]}</td>
+      <td style="${brStyle}">${r[3]}${carbBadge}</td>
+      <td><span class="sz-badge" style="background:${szColor(r[4])}22;color:${szColor(r[4])}">${r[4]} <span style="opacity:0.7;font-size:10px">(${r[6]}병)</span></span></td>
+      <td class="num" style="${priceStyle}">${r[5].toLocaleString()}${minBadge}</td>
+      <td class="num" style="color:var(--muted2)">${r[7].toLocaleString()}</td>
+      <td style="color:var(--muted);font-size:11px">${r[8]||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CSV 드래그앤드롭 ──
+function handleDrop(e){
+  e.preventDefault();
+  const zone = document.getElementById('dropZone');
+  zone.style.borderColor=''; zone.style.background='var(--surface)';
+  const file = e.dataTransfer.files[0];
+  if(file) loadCSVFile(file);
+}
+function handleFileInput(input){
+  if(input.files[0]) loadCSVFile(input.files[0]);
+}
+
+function loadCSVFile(file){
+  if(!file.name.endsWith('.csv')){ showToast('❌ CSV 파일만 지원합니다'); return; }
+  const spinner = document.getElementById('dropSpinner');
+  const label   = document.getElementById('dropLabel');
+  spinner.style.display='block';
+  label.textContent = '읽는 중...';
+
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const parsed = parseCSVtoRAW(e.target.result);
+      if(parsed.length===0) throw new Error('데이터 없음');
+      RAW = parsed;
+
+      // ── localStorage에 저장 ──
+      try{
+        localStorage.setItem('dashboard_raw', JSON.stringify(RAW));
+        localStorage.setItem('dashboard_filename', file.name);
+      } catch(e){ console.warn('저장 실패(용량 초과일 수 있음):', e); }
+
+      resetAllState();
+      initFilters();
+      render();
+      const dates = RAW.map(r=>r[0]).sort();
+      const d0 = dates[0].replace(/\//g,'.'), d1 = dates[dates.length-1].replace(/\//g,'.');
+      document.getElementById('headerDateRange').textContent = `${d0} ~ ${d1} · ${file.name}`;
+      label.textContent = `✓ ${file.name}`;
+      showToast(`✅ ${parsed.length}건 로드 완료 — ${file.name}`);
+    } catch(err){
+      label.textContent = 'CSV 파일 드래그 또는 클릭';
+      showToast('❌ 파일 파싱 실패: ' + err.message);
+    }
+    spinner.style.display='none';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSVtoRAW(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  // 헤더 2줄 스킵 (원본 구글시트 포맷: 첫줄 병합헤더, 둘째줄 컬럼명)
+  // 날짜가 있는 첫 데이터 행부터 시작
+  const result = [];
+  for(let i=0; i<lines.length; i++){
+    const cols = splitCSVLine(lines[i]);
+    const dateCell = cols[0]?.trim();
+    // 날짜 형식인지 확인 (숫자/점/슬래시/하이픈 포함)
+    if(!dateCell || !/\d{4}[\/.\\-]\d/.test(dateCell)) continue;
+
+    // 2026-03-12 → 2026/3/12 형식으로 통일
+    const date = dateCell.replace(/-/g,'/').replace(/\./g,'/').replace(/\/0(\d)/g,'/$1');
+    const ch     = cols[1]?.trim()||'';
+    const slot   = cols[2]?.trim()||'';
+    const brand  = cols[3]?.trim()||'';
+    // 팩단가 컬럼: 4~8번 중 첫 번째 값 있는 것
+    let size='', price=0;
+    const sizeMap = ['2L','500mL','330mL','1L','200mL'];
+    for(let si=0;si<5;si++){
+      const v = toNum(cols[4+si]);
+      if(v>0){ size=sizeMap[si]; price=v; break; }
+    }
+    if(!size) continue;
+    // 수량·금액: size에 해당하는 열 이후 수량/금액 쌍
+    const sizeIdx = sizeMap.indexOf(size);
+    const qtyBase = 9; // 수량 시작 컬럼 (J열=9)
+    const qty   = toNum(cols[qtyBase + sizeIdx*2])   || 0;
+    const amt   = toNum(cols[qtyBase + sizeIdx*2+1]) || 0;
+    const memo  = cols[cols.length-2]?.trim()||'';
+
+    if(ch && brand && price>0) result.push([date,ch,slot,brand,size,price,qty,amt,memo]);
+  }
+  return result;
+}
+
+function splitCSVLine(line){
+  const cols=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){inQ=!inQ;continue;}
+    if(c===','&&!inQ){cols.push(cur.trim());cur='';continue;}
+    cur+=c;
+  }
+  cols.push(cur.trim());
+  return cols;
+}
+
+function toNum(v){ return parseFloat(String(v||'').replace(/,/g,''))||0; }
+
+function resetAllState(){
+  selCh='전체'; selSz='전체'; selBr='전체';
+  selDateFrom=null; selDateTo=null;
+  selBrandPicks=new Set(); selTableSz='전체'; selSzQtyPicks=new Set();
+  document.getElementById('dateFrom').value='';
+  document.getElementById('dateTo').value='';
+  document.getElementById('dateFrom').min='';
+  document.getElementById('dateFrom').max='';
+  document.getElementById('dateTo').min='';
+  document.getElementById('dateTo').max='';
+  Object.values(charts).forEach(c=>c.destroy());
+  charts={};
+}
+
+function updateDateRange(){
+  const allDates = RAW.map(r=>r[0]).sort();
+  function toInputDate(d){ const p=d.split('/'); return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; }
+  const minD = toInputDate(allDates[0]);
+  const maxD = toInputDate(allDates[allDates.length-1]);
+  document.getElementById('dateFrom').min = minD;
+  document.getElementById('dateFrom').max = maxD;
+  document.getElementById('dateTo').min   = minD;
+  document.getElementById('dateTo').max   = maxD;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>{ t.style.display='none'; },3500);
+}
+
+// ── BOOT ──
+// localStorage에 저장된 데이터 있으면 복원
+try {
+  const saved = localStorage.getItem('dashboard_raw');
+  const savedName = localStorage.getItem('dashboard_filename');
+  if(saved){
+    const parsed = JSON.parse(saved);
+    if(parsed && parsed.length > 0){
+      RAW = parsed;
+      const dates = RAW.map(r=>r[0]).sort();
+      const fmt2 = d => d.replace(/[-\/]/g,'.').replace(/\.0(\d)/g,'.$1');
+      const d0 = fmt2(dates[0]), d1 = fmt2(dates[dates.length-1]);
+      document.getElementById('headerDateRange').textContent = `${d0} ~ ${d1} · ${savedName||'저장된 데이터'}`;
+      document.getElementById('dropLabel').textContent = `✓ ${savedName||'저장된 데이터'}`;
+    }
+  }
+} catch(e){ console.warn('복원 실패:', e); }
+
+initFilters();
+render();
+</script>
+</body>
+</html>
