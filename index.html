@@ -423,7 +423,7 @@ body::before {
 <script>
 // ── 비밀번호 ──
 // 아래 YOUR_PASSWORD 를 원하는 비밀번호로 바꾸세요
-const DASHBOARD_PASSWORD = 'YOUR_PASSWORD';
+const DASHBOARD_PASSWORD = '0368';
 
 function checkPassword(){
   const input = document.getElementById('pwInput').value;
@@ -660,10 +660,10 @@ function render(){
 function updateHeaderDate(){
   const dates = RAW.map(r=>r[0]).sort();
   if(!dates.length) return;
-  const d0 = dates[0].replace(/\//g,'.');
-  const d1 = dates[dates.length-1].replace(/\//g,'.');
+  const fmt2 = d => d.replace(/[-\/]/g,'.').replace(/\.0(\d)/g,'.$1');
+  const d0 = fmt2(dates[0]);
+  const d1 = fmt2(dates[dates.length-1]);
   const el = document.getElementById('headerDateRange');
-  // CSV 로드 후엔 파일명이 이미 설정돼 있으므로 날짜 부분만 앞에 갱신
   const current = el.textContent;
   const filepart = current.includes('·') ? current.split('·').slice(1).join('·').trim() : '기본 데이터';
   el.textContent = `${d0} ~ ${d1} · ${filepart}`;
@@ -1241,7 +1241,8 @@ try {
     if(parsed && parsed.length > 0){
       RAW = parsed;
       const dates = RAW.map(r=>r[0]).sort();
-      const d0 = dates[0].replace(/\//g,'.'), d1 = dates[dates.length-1].replace(/\//g,'.');
+      const fmt2 = d => d.replace(/[-\/]/g,'.').replace(/\.0(\d)/g,'.$1');
+      const d0 = fmt2(dates[0]), d1 = fmt2(dates[dates.length-1]);
       document.getElementById('headerDateRange').textContent = `${d0} ~ ${d1} · ${savedName||'저장된 데이터'}`;
       document.getElementById('dropLabel').textContent = `✓ ${savedName||'저장된 데이터'}`;
     }
