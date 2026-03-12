@@ -423,7 +423,7 @@ body::before {
 <script>
 // ── 비밀번호 ──
 // 아래 YOUR_PASSWORD 를 원하는 비밀번호로 바꾸세요
-const DASHBOARD_PASSWORD = '0368';
+const DASHBOARD_PASSWORD = 'YOUR_PASSWORD';
 
 function checkPassword(){
   const input = document.getElementById('pwInput').value;
@@ -1126,6 +1126,13 @@ function loadCSVFile(file){
       const parsed = parseCSVtoRAW(e.target.result);
       if(parsed.length===0) throw new Error('데이터 없음');
       RAW = parsed;
+
+      // ── localStorage에 저장 ──
+      try{
+        localStorage.setItem('dashboard_raw', JSON.stringify(RAW));
+        localStorage.setItem('dashboard_filename', file.name);
+      } catch(e){ console.warn('저장 실패(용량 초과일 수 있음):', e); }
+
       resetAllState();
       initFilters();
       render();
@@ -1151,10 +1158,11 @@ function parseCSVtoRAW(text){
   for(let i=0; i<lines.length; i++){
     const cols = splitCSVLine(lines[i]);
     const dateCell = cols[0]?.trim();
-    // 날짜 형식인지 확인 (숫자/점/슬래시 포함)
-    if(!dateCell || !/\d{4}[\/.]\d/.test(dateCell)) continue;
+    // 날짜 형식인지 확인 (숫자/점/슬래시/하이픈 포함)
+    if(!dateCell || !/\d{4}[\/.\\-]\d/.test(dateCell)) continue;
 
-    const date   = dateCell.replace(/\./g,'/');
+    // 2026-03-12 → 2026/3/12 형식으로 통일
+    const date = dateCell.replace(/-/g,'/').replace(/\./g,'/').replace(/\/0(\d)/g,'/$1');
     const ch     = cols[1]?.trim()||'';
     const slot   = cols[2]?.trim()||'';
     const brand  = cols[3]?.trim()||'';
@@ -1224,6 +1232,22 @@ function showToast(msg){
 }
 
 // ── BOOT ──
+// localStorage에 저장된 데이터 있으면 복원
+try {
+  const saved = localStorage.getItem('dashboard_raw');
+  const savedName = localStorage.getItem('dashboard_filename');
+  if(saved){
+    const parsed = JSON.parse(saved);
+    if(parsed && parsed.length > 0){
+      RAW = parsed;
+      const dates = RAW.map(r=>r[0]).sort();
+      const d0 = dates[0].replace(/\//g,'.'), d1 = dates[dates.length-1].replace(/\//g,'.');
+      document.getElementById('headerDateRange').textContent = `${d0} ~ ${d1} · ${savedName||'저장된 데이터'}`;
+      document.getElementById('dropLabel').textContent = `✓ ${savedName||'저장된 데이터'}`;
+    }
+  }
+} catch(e){ console.warn('복원 실패:', e); }
+
 initFilters();
 render();
 </script>
