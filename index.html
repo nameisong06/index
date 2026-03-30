@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>가격 모니터링</title>
+<title>스파클 가격 모니터링</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -132,10 +132,10 @@ html,body{width:100vw;height:100vh;overflow:hidden;font-family:'Plus Jakarta San
 .fpill:hover:not(.on){border-color:var(--accent2);color:var(--accent);}
 
 /* ── CONTENT ── */
-.content{flex:1;padding:10px 24px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-height:0;}
+.content{flex:1;padding:10px 24px 14px;display:flex;flex-direction:column;gap:8px;overflow:hidden;min-height:0;height:0;}
 
 /* ── KPI ── */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex-shrink:0;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex-shrink:0;height:78px;}
 .kpi-card{
   background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;
   border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
@@ -226,11 +226,11 @@ tr:hover td{background:#f8fafc;}
 
 /* ── EVENT PAGE SPECIFIC ── */
 .evt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;min-height:0;}
-.evt-bottom{display:grid;grid-template-columns:1fr 280px;gap:10px;flex-shrink:0;}
+.evt-bottom{display:grid;grid-template-columns:1fr 280px;gap:10px;flex-shrink:0;height:140px;}
 .pill-filter-wrap{display:flex;flex-wrap:wrap;gap:5px;}
 
 /* ── PRICE PAGE SPECIFIC ── */
-.price-bottom{display:grid;grid-template-columns:1fr 240px;gap:10px;flex-shrink:0;}
+.price-bottom{display:grid;grid-template-columns:1fr 240px;gap:10px;flex-shrink:0;height:140px;}
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
 .summary-box{background:var(--surface);border-radius:10px;padding:8px 10px;border:1px solid var(--border);}
 .summary-box-label{font-size:9px;color:var(--muted2);font-weight:600;letter-spacing:.5px;}
@@ -427,7 +427,7 @@ tr:hover td{background:#f8fafc;}
 // ══════════════════════════════════════════════
 // PASSWORD
 // ══════════════════════════════════════════════
-const PW = '1135'; 
+const PW = '1135';
 function checkPw(){
   const v = document.getElementById('pwInput').value;
   if(v===PW){
@@ -456,8 +456,8 @@ function goPage(name){
 // ══════════════════════════════════════════════
 // PRICE DATA
 // ══════════════════════════════════════════════
-const BRANDS = ['스파클','미라클','풀무원','풀무원워터','자연담','아쿠아시스','동원','동원 웨이크업','삼다수','백산수','몽베스트','아이시스','동아오츠카','석수','평창수'];
-const INTEREST = [108084,108084,141625,141625,23972,2896,833735,833735,641135,113962,117655,695381,372382,44992,62483];
+let BRANDS = ['스파클','미라클','풀무원','풀무원워터','자연담','아쿠아시스','동원','동원 웨이크업','삼다수','백산수','몽베스트','아이시스','동아오츠카','석수','평창수'];
+let INTEREST = [108084,108084,141625,141625,23972,2896,833735,833735,641135,113962,117655,695381,372382,44992,62483];
 let PRICE_RAW = [
   {sz:'2L',qty:6,  prices:[5000,null,4900,4400,null,5800,5800,null,7480,7000,null,null,null,4750,null]},
   {sz:'2L',qty:12, prices:[7400,6850,8000,7400,6500,6400,6800,null,13460,12000,7500,9720,8200,8300,8640]},
@@ -536,6 +536,10 @@ function updatePriceQtyFilter(){
   const qtys=[...new Set(PRICE_RAW.filter(r=>priceSz==='전체'||r.sz===priceSz).map(r=>r.qty))].sort((a,b)=>a-b);
   sel.innerHTML='<option value="전체">전체 병수</option>';
   qtys.forEach(q=>{const o=document.createElement('option');o.value=q;o.textContent=q+'병';sel.appendChild(o);});
+  // 브랜드 드롭다운 갱신
+  const bsel=document.getElementById('priceBrandSel');
+  bsel.innerHTML='<option value="전체">전체 브랜드</option>';
+  BRANDS.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;bsel.appendChild(o);});
 }
 function renderPrice(){
   const data=getPriceFiltered();
@@ -560,9 +564,11 @@ function renderPrice(){
   renderPriceSummary();
 }
 function renderPriceBar(data){
+  const selBrand=document.getElementById('priceBrandSel').value;
   const sizes=priceSz==='전체'?['2L','500mL','330mL','1L']:[priceSz];
   const repRows=sizes.map(sz=>{const rows=data.filter(r=>r.sz===sz);return rows[Math.floor(rows.length/2)]||rows[0];}).filter(Boolean);
-  const showBrands=['스파클','풀무원','동원','삼다수','백산수','아이시스'];
+  const baseBrands=['스파클','풀무원','동원','삼다수','백산수','아이시스'];
+  const showBrands=selBrand==='전체'?baseBrands:[...new Set(['스파클',selBrand])];
   const bidxs=showBrands.map(b=>BRANDS.indexOf(b)).filter(i=>i>=0);
   const labels=repRows.map(r=>`${r.sz}(${r.qty}병)`);
   const datasets=bidxs.map((bi,i)=>({
@@ -817,7 +823,62 @@ function loadEventFile(input){
   input.value='';
 }
 function loadPriceFile(input){
-  showToast('⚠️ 가격비교 CSV 업로드는 준비 중이에요. 파일을 저한테 전달해주시면 업데이트해드릴게요!');
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const lines=e.target.result.split(/
+?
+/);
+      // 1행: 관심고객수 파싱
+      const interestRow=splitCSV(lines[0]);
+      const newInterest=[];
+      // 2행: 브랜드명 파싱
+      const brandRow=splitCSV(lines[1]);
+      const newBrands=[];
+      for(let i=1;i<brandRow.length;i++){
+        const b=brandRow[i].trim();
+        const v=parseInt(String(interestRow[i]||'').replace(/,/g,''))||0;
+        if(b){newBrands.push(b);newInterest.push(v);}
+      }
+      if(!newBrands.length)throw new Error('브랜드 데이터 없음');
+
+      // 3행~: 가격 데이터 파싱
+      const newRaw=[];
+      let curSz='';
+      for(let i=2;i<lines.length;i++){
+        const cols=splitCSV(lines[i]);
+        if(!cols.some(c=>c.trim()))continue;
+        const szCell=cols[0].trim();
+        const qtyCell=cols[1].trim();
+        if(szCell)curSz=szCell;
+        const qty=parseInt(qtyCell)||null;
+        if(!curSz||!qty)continue;
+        const prices=newBrands.map((_,bi)=>toN(cols[bi+2]));
+        newRaw.push({sz:curSz,qty,prices});
+      }
+      if(!newRaw.length)throw new Error('가격 데이터 없음');
+
+      // 전역 변수 업데이트
+      BRANDS.splice(0,BRANDS.length,...newBrands);
+      INTEREST.splice(0,INTEREST.length,...newInterest);
+      PRICE_RAW.splice(0,PRICE_RAW.length,...newRaw);
+
+      // localStorage 저장
+      localStorage.setItem('price_brands',JSON.stringify(newBrands));
+      localStorage.setItem('price_interest',JSON.stringify(newInterest));
+      localStorage.setItem('price_raw',JSON.stringify(newRaw));
+      localStorage.setItem('price_file',file.name);
+
+      // 필터 및 렌더 갱신
+      updatePriceQtyFilter();
+      renderPrice();
+      updateStatus(file.name);
+      showToast(`✅ 가격데이터 ${newRaw.length}행 · 브랜드 ${newBrands.length}개 로드 완료`);
+    }catch(err){showToast('❌ 파싱 실패: '+err.message);}
+  };
+  reader.readAsText(file,'UTF-8');
   input.value='';
 }
 function splitCSV(line){
@@ -851,7 +912,25 @@ function showToast(msg){
 // ══════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════
-// localStorage 복원
+// localStorage 복원 - 가격비교 데이터
+try{
+  const savedBrands=localStorage.getItem('price_brands');
+  const savedInterest=localStorage.getItem('price_interest');
+  const savedRaw=localStorage.getItem('price_raw');
+  const savedFile=localStorage.getItem('price_file');
+  if(savedBrands&&savedRaw){
+    const pb=JSON.parse(savedBrands);
+    const pi=JSON.parse(savedInterest);
+    const pr=JSON.parse(savedRaw);
+    if(pb.length&&pr.length){
+      BRANDS.splice(0,BRANDS.length,...pb);
+      INTEREST.splice(0,INTEREST.length,...pi);
+      PRICE_RAW.splice(0,PRICE_RAW.length,...pr);
+      if(savedFile)updateStatus(savedFile);
+    }
+  }
+}catch(e){}
+// localStorage 복원 - 행사가격 데이터
 try{
   const saved=localStorage.getItem('event_raw');
   const savedName=localStorage.getItem('event_file');
