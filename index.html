@@ -16,169 +16,132 @@
     --text2: #555a66;
     --text3: #9499a6;
     --accent: #2563eb;
-    --accent2: #1d4ed8;
     --red: #dc2626;
     --green: #16a34a;
     --input-bg: #f8f9fb;
     --header-h: 56px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px;
-    min-height: 100vh;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 13px; min-height: 100vh; }
 
+  /* HEADER */
   header {
     height: var(--header-h);
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 12px;
+    position: sticky; top: 0; z-index: 100;
   }
-  header h1 { font-size: 14px; font-weight: 700; color: #2563eb; letter-spacing: 0.05em; text-transform: uppercase; }
+  header h1 { font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; }
   header span { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
   .header-actions { margin-left: auto; display: flex; gap: 8px; }
 
   .btn {
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-family: 'Noto Sans KR', sans-serif;
-    cursor: pointer;
-    transition: all 0.15s;
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text2); padding: 6px 14px; border-radius: 6px;
+    font-size: 12px; font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer; transition: all 0.15s;
   }
-  .btn:hover { border-color: #2563eb; color: #2563eb; }
-  .btn-accent { background: #2563eb; border-color: #2563eb; color: #ffffff; font-weight: 700; }
-  .btn-accent:hover { background: #1d4ed8; border-color: #1d4ed8; color: #ffffff; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .btn-accent:hover { background: #1d4ed8; border-color: #1d4ed8; }
 
   main { padding: 24px; }
 
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+  /* TABS */
+  .tabs {
+    display: flex; gap: 4px;
+    border-bottom: 2px solid var(--border);
     margin-bottom: 20px;
-    overflow: hidden;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    font-size: 13px; font-weight: 500;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: transparent; border: none;
+    color: var(--text3); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SHIPPING PANEL */
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 20px; overflow: hidden;
   }
   .panel-header {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
+    padding: 12px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
   }
   .panel-header h2 { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; }
   .toggle-icon { margin-left: auto; font-size: 11px; color: var(--text3); }
   .panel-body { padding: 16px 18px; }
   .panel-body.hidden { display: none; }
-
-  .shipping-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
-  }
-  .shipping-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-  }
+  .shipping-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+  .shipping-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
   .shipping-item label { display: block; font-size: 10px; color: var(--text3); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
   .shipping-item input { width: 100%; background: transparent; border: none; color: var(--text); font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 500; outline: none; }
   .shipping-item input:focus { color: var(--accent); }
 
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
+  /* TABLE */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
   .table-toolbar {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    padding: 12px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
   }
   .table-toolbar h2 { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; }
   .table-scroll { overflow-x: auto; }
 
-  table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
   thead tr { background: var(--surface2); border-bottom: 1px solid var(--border2); }
   th {
-    padding: 10px 12px;
-    text-align: right;
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-    border-right: 1px solid var(--border);
+    padding: 10px 12px; text-align: right;
+    font-size: 10px; font-weight: 500; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    white-space: nowrap; border-right: 1px solid var(--border);
   }
   th:first-child { text-align: left; }
   th:last-child { border-right: none; }
-  .col-input { color: #1d4ed8 !important; }
-  .col-result { color: #2563eb !important; }
-  .col-highlight { color: #1d4ed8 !important; }
 
-  /* 열 배경색 */
-  .bg-price  { background: rgba(37, 99, 235, 0.06) !important; }
-  .bg-fee    { background: rgba(220, 38,  38, 0.05) !important; }
-  .bg-margin { background: rgba(37, 99, 235, 0.04) !important; }
+  .col-input    { color: #1d4ed8 !important; }
+  .col-highlight{ color: #1d4ed8 !important; }
+  .col-result   { color: #2563eb !important; }
+
+  .bg-price  { background: rgba(37,99,235,0.06) !important; }
+  .bg-fee    { background: rgba(220,38,38,0.05) !important; }
+  .bg-margin { background: rgba(37,99,235,0.04) !important; }
 
   td.td-input.bg-price input { color: #1d4ed8; }
-  td.td-input.bg-price input:focus { background: rgba(37, 99, 235, 0.10); }
+  td.td-input.bg-price input:focus { background: rgba(37,99,235,0.10); }
   td.td-input.bg-fee   input { color: #dc2626; }
-  td.td-input.bg-fee   input:focus { background: rgba(220, 38, 38, 0.10); }
+  td.td-input.bg-fee   input:focus { background: rgba(220,38,38,0.10); }
 
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:hover { background: var(--surface2); }
   tbody tr:last-child { border-bottom: none; }
-
   td { padding: 0; border-right: 1px solid var(--border); vertical-align: middle; }
   td:last-child { border-right: none; }
 
-  .cell {
-    padding: 8px 12px;
-    text-align: right;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text2);
-    white-space: nowrap;
-  }
+  .cell { padding: 8px 12px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); white-space: nowrap; }
   .cell-name { text-align: left; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 500; color: var(--text); }
-  .cell-origin { font-size: 11px; color: var(--text3); }
 
   td.td-input { padding: 0; }
   td.td-input input {
-    width: 100%;
-    padding: 8px 12px;
-    background: transparent;
-    border: none;
-    color: #1d4ed8;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: right;
-    outline: none;
-    transition: background 0.15s;
-    display: block;
+    width: 100%; padding: 8px 12px; background: transparent; border: none;
+    color: #1d4ed8; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 500; text-align: right;
+    outline: none; transition: background 0.15s; display: block;
   }
-  td.td-input input:focus { background: rgba(37, 99, 235, 0.06); }
+  td.td-input input:focus { background: rgba(37,99,235,0.06); }
   td.td-input input::placeholder { color: var(--text3); }
 
   .cell-positive { color: var(--green) !important; font-weight: 500; }
@@ -187,36 +150,10 @@
   .cell-margin-highlight { font-size: 13px; font-weight: 700; }
 
   .cell-action { padding: 8px 10px; text-align: center; }
-  .btn-delete {
-    background: transparent; border: none; color: var(--text3);
-    cursor: pointer; font-size: 14px; padding: 2px 6px;
-    border-radius: 4px; transition: all 0.15s; line-height: 1;
-  }
-  .btn-delete:hover { color: var(--red); background: rgba(255,95,87,0.1); }
+  .btn-delete { background: transparent; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s; }
+  .btn-delete:hover { color: var(--red); background: rgba(220,38,38,0.08); }
 
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 200;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 12px; padding: 24px; width: 360px; max-width: 90vw;
-  }
-  .modal h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 18px; }
-  .form-row { margin-bottom: 12px; }
-  .form-row label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .form-row input {
-    width: 100%; background: var(--input-bg); border: 1px solid var(--border);
-    color: var(--text); padding: 8px 12px; border-radius: 6px;
-    font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none;
-    transition: border-color 0.15s;
-  }
-  .form-row input:focus { border-color: var(--accent); }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
-
+  /* SUMMARY */
   .summary-bar {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 10px; padding: 14px 20px; margin-top: 16px;
@@ -224,117 +161,152 @@
   }
   .summary-item { display: flex; flex-direction: column; gap: 3px; }
   .summary-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
-  .summary-value { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #2563eb; }
+  .summary-value { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent); }
 
-  @media (max-width: 768px) {
-    main { padding: 12px; }
-    header { padding: 0 14px; }
-    header span { display: none; }
-  }
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 24px; width: 360px; max-width: 90vw; }
+  .modal h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 18px; }
+  .form-row { margin-bottom: 12px; }
+  .form-row label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-row input { width: 100%; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; transition: border-color 0.15s; }
+  .form-row input:focus { border-color: var(--accent); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+
+  @media (max-width: 768px) { main { padding: 12px; } header { padding: 0 14px; } header span { display: none; } }
 </style>
 </head>
 <body>
 
 <header>
   <h1>마진 계산기</h1>
-  <span>v1.1</span>
+  <span>v2.0</span>
   <div class="header-actions">
-    <button class="btn" onclick="resetAll()">초기화</button>
-    <button class="btn btn-accent" onclick="openModal()">+ 상품 추가</button>
+    <button class="btn" id="btn-reset">초기화</button>
+    <button class="btn btn-accent" id="btn-add">+ 상품 추가</button>
   </div>
 </header>
 
 <main>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="0">💧 2L ~ 1L</button>
+    <button class="tab-btn" data-tab="1">🫧 탄산수</button>
+    <button class="tab-btn" data-tab="2">🪣 18.9L / 12L / 15L</button>
+    <button class="tab-btn" data-tab="3">🌾 튀밥 / 쌀 / 혼합곡 / 종이컵</button>
+  </div>
 
-  <div class="panel">
-    <div class="panel-header" onclick="togglePanel()">
-      <h2>📦 배송비 테이블 (계단 포함)</h2>
-      <span style="font-size:11px; color:var(--text3); margin-left:8px;">팩수량 기준 자동 적용 · 수정 가능</span>
-      <span class="toggle-icon" id="panel-toggle">▼ 펼치기</span>
+  <!-- TAB 0: 2L~1L (배송비 자동조회) -->
+  <div class="tab-panel active" data-panel="0">
+    <div class="panel" id="ship-panel-0">
+      <div class="panel-header" onclick="toggleShipping(0)">
+        <h2>📦 배송비 테이블 (계단 포함)</h2>
+        <span style="font-size:11px; color:var(--text3); margin-left:8px;">팩수량 기준 자동 적용 · 수정 가능</span>
+        <span class="toggle-icon" id="ship-toggle-0">▼ 펼치기</span>
+      </div>
+      <div class="panel-body hidden" id="ship-body-0"></div>
     </div>
-    <div class="panel-body hidden" id="panel-body">
-      <div class="shipping-grid" id="shipping-grid"></div>
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <h2>2L ~ 1L</h2>
+        <span style="font-size:11px; color:var(--text3); margin-left:4px;">제안가 입력 시 자동 계산</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr id="thead-0"></tr></thead>
+          <tbody id="tbody-0"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="summary-bar">
+      <div class="summary-item"><span class="summary-label">계산된 상품</span><span class="summary-value" id="s0-count">0</span></div>
+      <div class="summary-item"><span class="summary-label">평균 마진율</span><span class="summary-value" id="s0-rate">—</span></div>
+      <div class="summary-item"><span class="summary-label">최고 1팩마진</span><span class="summary-value" id="s0-best">—</span></div>
+      <div class="summary-item"><span class="summary-label">최저 1팩마진</span><span class="summary-value" id="s0-worst">—</span></div>
     </div>
   </div>
 
-  <div class="table-wrap">
-    <div class="table-toolbar">
-      <h2>상품 마진 계산기</h2>
-      <span style="font-size:11px; color:var(--text3); margin-left:4px;">제안가 입력 시 자동 계산</span>
+  <!-- TAB 1: 탄산수 (배송비 직접입력) -->
+  <div class="tab-panel" data-panel="1">
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <h2>탄산수</h2>
+        <span style="font-size:11px; color:var(--text3); margin-left:4px;">제안가 입력 시 자동 계산 · 배송비 직접 입력</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr id="thead-1"></tr></thead>
+          <tbody id="tbody-1"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th style="min-width:90px; text-align:left;">상품명</th>
-            <th class="col-input" style="min-width:65px;">원가 ✏</th>
-            <th class="col-input bg-price" style="min-width:90px;">제안가 ✏</th>
-            <th class="col-input" style="min-width:60px;">팩수량 ✏</th>
-            <th class="col-input" style="min-width:60px;">병수량 ✏</th>
-            <th class="col-input bg-fee" style="min-width:65px;">수수료% ✏</th>
-            <th style="min-width:75px;">1팩판매가</th>
-            <th style="min-width:75px;">1병판매가</th>
-            <th class="bg-fee" style="min-width:75px;">수수료액</th>
-            <th class="bg-fee" style="min-width:80px;">수수료제외</th>
-            <th style="min-width:75px;">배송비</th>
-            <th style="min-width:80px;">배송비제외</th>
-            <th style="min-width:80px;">팩당정산가</th>
-            <th class="col-highlight bg-margin" style="min-width:85px;">★ 1팩마진</th>
-            <th class="col-result bg-margin" style="min-width:75px;">총마진</th>
-            <th class="col-result bg-margin" style="min-width:65px;">마진율</th>
-            <th style="min-width:40px; border-right:none;"></th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
+    <div class="summary-bar">
+      <div class="summary-item"><span class="summary-label">계산된 상품</span><span class="summary-value" id="s1-count">0</span></div>
+      <div class="summary-item"><span class="summary-label">평균 마진율</span><span class="summary-value" id="s1-rate">—</span></div>
+      <div class="summary-item"><span class="summary-label">최고 1팩마진</span><span class="summary-value" id="s1-best">—</span></div>
+      <div class="summary-item"><span class="summary-label">최저 1팩마진</span><span class="summary-value" id="s1-worst">—</span></div>
     </div>
   </div>
 
-  <div class="summary-bar">
-    <div class="summary-item">
-      <span class="summary-label">계산된 상품</span>
-      <span class="summary-value" id="sum-count">0</span>
+  <!-- TAB 2: 18.9L/12L/15L (배송비 직접입력) -->
+  <div class="tab-panel" data-panel="2">
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <h2>18.9L / 12L / 15L</h2>
+        <span style="font-size:11px; color:var(--text3); margin-left:4px;">제안가 입력 시 자동 계산 · 배송비 직접 입력</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr id="thead-2"></tr></thead>
+          <tbody id="tbody-2"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="summary-item">
-      <span class="summary-label">평균 마진율</span>
-      <span class="summary-value" id="sum-avg-rate">—</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">최고 1팩마진</span>
-      <span class="summary-value" id="sum-best">—</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">최저 1팩마진</span>
-      <span class="summary-value" id="sum-worst">—</span>
+    <div class="summary-bar">
+      <div class="summary-item"><span class="summary-label">계산된 상품</span><span class="summary-value" id="s2-count">0</span></div>
+      <div class="summary-item"><span class="summary-label">평균 마진율</span><span class="summary-value" id="s2-rate">—</span></div>
+      <div class="summary-item"><span class="summary-label">최고 1팩마진</span><span class="summary-value" id="s2-best">—</span></div>
+      <div class="summary-item"><span class="summary-label">최저 1팩마진</span><span class="summary-value" id="s2-worst">—</span></div>
     </div>
   </div>
 
+  <!-- TAB 3: 튀밥/쌀/혼합곡/종이컵 (배송비 직접입력) -->
+  <div class="tab-panel" data-panel="3">
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <h2>튀밥 / 쌀 / 혼합15곡 / 종이컵</h2>
+        <span style="font-size:11px; color:var(--text3); margin-left:4px;">제안가 입력 시 자동 계산 · 배송비 직접 입력</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr id="thead-3"></tr></thead>
+          <tbody id="tbody-3"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="summary-bar">
+      <div class="summary-item"><span class="summary-label">계산된 상품</span><span class="summary-value" id="s3-count">0</span></div>
+      <div class="summary-item"><span class="summary-label">평균 마진율</span><span class="summary-value" id="s3-rate">—</span></div>
+      <div class="summary-item"><span class="summary-label">최고 1팩마진</span><span class="summary-value" id="s3-best">—</span></div>
+      <div class="summary-item"><span class="summary-label">최저 1팩마진</span><span class="summary-value" id="s3-worst">—</span></div>
+    </div>
+  </div>
 </main>
 
+<!-- 상품 추가 모달 -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h3>상품 추가</h3>
+    <h3 id="modal-title">상품 추가</h3>
     <div class="form-row">
       <label>상품명</label>
-      <input type="text" id="new-name" placeholder="예: 2리터">
+      <input type="text" id="new-name" placeholder="예: 2L">
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label>원가 (₩)</label>
-        <input type="number" id="new-cost" placeholder="1650">
-      </div>
-      <div class="form-row">
-        <label>팩수량</label>
-        <input type="number" id="new-pack" placeholder="4">
-      </div>
-      <div class="form-row">
-        <label>병수량</label>
-        <input type="number" id="new-bottle" placeholder="6">
-      </div>
-      <div class="form-row">
-        <label>수수료 (%)</label>
-        <input type="number" id="new-fee" placeholder="12" step="0.1">
-      </div>
+      <div class="form-row"><label>원가 (₩)</label><input type="number" id="new-cost" placeholder="1650"></div>
+      <div class="form-row"><label>팩수량</label><input type="number" id="new-pack" placeholder="4"></div>
+      <div class="form-row"><label>병수량</label><input type="number" id="new-bottle" placeholder="6"></div>
+      <div class="form-row"><label>수수료 (%)</label><input type="number" id="new-fee" placeholder="12" step="0.1"></div>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">취소</button>
@@ -344,7 +316,10 @@
 </div>
 
 <script>
-// ── 배송비 테이블 ──────────────────────────────────────────
+// ── 현재 활성 탭 ───────────────────────────────────────────
+let activeTab = 0;
+
+// ── 배송비 테이블 (탭0 전용) ───────────────────────────────
 let shippingTable = [
   {qty:1,fee:1100},{qty:2,fee:2000},{qty:3,fee:3000},
   {qty:4,fee:3800},{qty:5,fee:4500},{qty:6,fee:5400},
@@ -353,6 +328,7 @@ let shippingTable = [
   {qty:80,fee:64000},{qty:96,fee:76800},{qty:100,fee:80000},
   {qty:112,fee:89600},{qty:144,fee:115200}
 ];
+let shipPanelOpen = false;
 
 function getShipping(packQty) {
   const sorted = [...shippingTable].sort((a,b) => a.qty - b.qty);
@@ -362,40 +338,66 @@ function getShipping(packQty) {
   return sorted[sorted.length-1].fee;
 }
 
-// ── 상품 데이터 ────────────────────────────────────────────
-let products = [
-  {id:1,  name:'2리터',       cost:1650, pack:4,  bottle:6,  fee:12, price:''},
-  {id:2,  name:'2리터(6팩)',   cost:1900, pack:6,  bottle:6,  fee:12, price:''},
-  {id:3,  name:'500mL',      cost:2200, pack:3,  bottle:20, fee:12, price:''},
-  {id:4,  name:'500mL(5팩)', cost:2450, pack:5,  bottle:20, fee:12, price:''},
-  {id:5,  name:'330mL',      cost:2300, pack:2,  bottle:20, fee:12, price:''},
-  {id:6,  name:'200mL',      cost:3600, pack:2,  bottle:30, fee:12, price:''},
-  {id:7,  name:'200mL(30팩)',cost:3600, pack:30, bottle:30, fee:12, price:''},
-  {id:8,  name:'1리터',      cost:2400, pack:2,  bottle:12, fee:12, price:''},
-  {id:9,  name:'탄산수(10팩)',cost:5200, pack:10, bottle:30, fee:12, price:''},
-  {id:10, name:'탄산수(2팩)', cost:5200, pack:2,  bottle:30, fee:12, price:''},
-  {id:11, name:'탄산수(3팩)', cost:5500, pack:3,  bottle:20, fee:12, price:''},
-  {id:12, name:'18.9L',      cost:2000, pack:2,  bottle:1,  fee:12, price:''},
-  {id:13, name:'12L',        cost:3000, pack:2,  bottle:1,  fee:12, price:''},
-  {id:14, name:'튀밥 4병',    cost:3300, pack:1,  bottle:4,  fee:12, price:''},
-  {id:15, name:'튀밥 8병',    cost:6600, pack:1,  bottle:8,  fee:12, price:''},
-  {id:16, name:'쌀',         cost:7750, pack:1,  bottle:8,  fee:12, price:''},
+// ── 탭별 상품 데이터 ───────────────────────────────────────
+// tabIndex, useAutoShipping(true=자동조회, false=직접입력)
+const tabConfig = [
+  { useAutoShipping: true },
+  { useAutoShipping: false },
+  { useAutoShipping: false },
+  { useAutoShipping: false },
 ];
-let nextId = 20;
+
+const allProducts = [
+  // 탭0: 2L~1L
+  [
+    {id:101, name:'2L',           cost:1650, pack:4,  bottle:6,  fee:12, price:'', shipping:''},
+    {id:102, name:'2L (원가인상)',  cost:1900, pack:6,  bottle:6,  fee:12, price:'', shipping:''},
+    {id:103, name:'500mL',        cost:2200, pack:3,  bottle:20, fee:12, price:'', shipping:''},
+    {id:104, name:'500mL (원가인상)',cost:2450,pack:5, bottle:20, fee:12, price:'', shipping:''},
+    {id:105, name:'330mL',        cost:2300, pack:2,  bottle:20, fee:12, price:'', shipping:''},
+    {id:106, name:'200mL',        cost:3600, pack:2,  bottle:30, fee:12, price:'', shipping:''},
+    {id:107, name:'1L',           cost:2400, pack:2,  bottle:12, fee:12, price:'', shipping:''},
+  ],
+  // 탭1: 탄산수
+  [
+    {id:201, name:'탄산수 (10팩)', cost:5200, pack:10, bottle:30, fee:12, price:'', shipping:''},
+    {id:202, name:'탄산수 (2팩)',  cost:5200, pack:2,  bottle:30, fee:12, price:'', shipping:''},
+    {id:203, name:'탄산수 (3팩)',  cost:5500, pack:3,  bottle:20, fee:12, price:'', shipping:''},
+  ],
+  // 탭2: 18.9L/12L/15L
+  [
+    {id:301, name:'18.9L', cost:2000, pack:2, bottle:1, fee:12, price:'', shipping:''},
+    {id:302, name:'12L',   cost:3000, pack:2, bottle:1, fee:12, price:'', shipping:''},
+    {id:303, name:'15L',   cost:2500, pack:2, bottle:1, fee:12, price:'', shipping:''},
+  ],
+  // 탭3: 튀밥/쌀/혼합곡/종이컵
+  [
+    {id:401, name:'튀밥 4병',  cost:3300, pack:1, bottle:4, fee:12, price:'', shipping:''},
+    {id:402, name:'튀밥 8병',  cost:6600, pack:1, bottle:8, fee:12, price:'', shipping:''},
+    {id:403, name:'쌀',        cost:7750, pack:1, bottle:8, fee:12, price:'', shipping:''},
+    {id:404, name:'혼합15곡',  cost:5000, pack:1, bottle:1, fee:12, price:'', shipping:''},
+    {id:405, name:'종이컵',    cost:4000, pack:1, bottle:1, fee:12, price:'', shipping:''},
+  ],
+];
+let nextId = 500;
 
 // ── 계산 로직 ──────────────────────────────────────────────
-function calc(p) {
+function calc(p, useAutoShipping) {
   const price   = parseFloat(p.price)  || 0;
   const pack    = parseFloat(p.pack)   || 1;
   const bottle  = parseFloat(p.bottle) || 1;
   const feeRate = parseFloat(p.fee)    || 0;
   const cost    = parseFloat(p.cost)   || 0;
   if (!price) return null;
+
+  const shipping = useAutoShipping
+    ? getShipping(pack)
+    : (parseFloat(p.shipping) || 0);
+
   const perPack    = price / pack;
   const perBottle  = price / (pack * bottle);
   const feeAmt     = price * (feeRate / 100);
   const afterFee   = price - feeAmt;
-  const shipping   = getShipping(pack);
   const afterShip  = afterFee - shipping;
   const perPackNet = afterShip / pack;
   const marginPack = perPackNet - cost;
@@ -412,18 +414,54 @@ function colorClass(n) {
   return 'cell-zero';
 }
 
-// ── 핵심: 자동계산 셀만 업데이트 (DOM 재생성 없음 → 포커스 유지) ──
-function updateCalcCells(id) {
-  const p = products.find(x => x.id === id);
+// ── thead 생성 ─────────────────────────────────────────────
+function buildThead(tabIdx) {
+  const useAuto = tabConfig[tabIdx].useAutoShipping;
+  const tr = document.getElementById(`thead-${tabIdx}`);
+  tr.innerHTML = '';
+
+  const cols = [
+    {label:'상품명',    cls:'', style:'min-width:110px; text-align:left;'},
+    {label:'원가 ✏',   cls:'col-input', style:'min-width:70px;'},
+    {label:'제안가 ✏', cls:'col-input bg-price', style:'min-width:90px;'},
+    {label:'팩수량 ✏', cls:'col-input', style:'min-width:60px;'},
+    {label:'병수량 ✏', cls:'col-input', style:'min-width:60px;'},
+    {label:'수수료% ✏',cls:'col-input bg-fee', style:'min-width:65px;'},
+    {label: useAuto ? '배송비(자동)' : '배송비 ✏', cls: useAuto ? '' : 'col-input', style:'min-width:80px;'},
+    {label:'1팩판매가', cls:'', style:'min-width:75px;'},
+    {label:'1병판매가', cls:'', style:'min-width:75px;'},
+    {label:'수수료액',  cls:'bg-fee', style:'min-width:75px;'},
+    {label:'수수료제외',cls:'bg-fee', style:'min-width:80px;'},
+    {label:'배송비제외',cls:'', style:'min-width:80px;'},
+    {label:'팩당정산가',cls:'', style:'min-width:80px;'},
+    {label:'★ 1팩마진',cls:'col-highlight bg-margin', style:'min-width:85px;'},
+    {label:'총마진',    cls:'col-result bg-margin', style:'min-width:75px;'},
+    {label:'마진율',    cls:'col-result bg-margin', style:'min-width:65px;'},
+    {label:'',          cls:'', style:'min-width:36px; border-right:none;'},
+  ];
+
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.className = c.cls;
+    th.setAttribute('style', c.style);
+    th.textContent = c.label;
+    tr.appendChild(th);
+  });
+}
+
+// ── 자동계산 셀 업데이트 ───────────────────────────────────
+function updateCalcCells(tabIdx, id) {
+  const useAuto = tabConfig[tabIdx].useAutoShipping;
+  const p = allProducts[tabIdx].find(x => x.id === id);
   if (!p) return;
-  const r = calc(p);
-  const row = document.querySelector(`tr[data-id="${id}"]`);
+  const r = calc(p, useAuto);
+  const row = document.querySelector(`#tbody-${tabIdx} tr[data-id="${id}"]`);
   if (!row) return;
   const cells = row.querySelectorAll('.auto-cell');
 
   if (!r) {
     cells.forEach(c => { c.textContent = '—'; c.className = 'cell auto-cell'; });
-    updateSummary();
+    updateSummary(tabIdx);
     return;
   }
 
@@ -432,28 +470,34 @@ function updateCalcCells(id) {
     {val: fmt(r.perBottle),  cls: ''},
     {val: fmt(r.feeAmt),     cls: ''},
     {val: fmt(r.afterFee),   cls: ''},
-    {val: fmt(r.shipping),   cls: ''},
     {val: fmt(r.afterShip),  cls: ''},
     {val: fmt(r.perPackNet), cls: ''},
-    {val: (r.marginPack   >= 0 ? '+' : '') + fmt(r.marginPack),   cls: 'cell-margin-highlight ' + colorClass(r.marginPack)},
-    {val: (r.totalMargin  >= 0 ? '+' : '') + fmt(r.totalMargin),  cls: colorClass(r.totalMargin)},
+    {val: (r.marginPack  >= 0 ? '+' : '') + fmt(r.marginPack),  cls: 'cell-margin-highlight ' + colorClass(r.marginPack)},
+    {val: (r.totalMargin >= 0 ? '+' : '') + fmt(r.totalMargin), cls: colorClass(r.totalMargin)},
     {val: fmtRate(r.marginRate), cls: colorClass(r.marginRate)},
   ];
+
+  // 자동배송비면 배송비 셀도 업데이트
+  if (useAuto) {
+    const shipCell = row.querySelector('.auto-ship-cell');
+    if (shipCell) shipCell.textContent = fmt(r.shipping);
+  }
 
   cells.forEach((c, i) => {
     c.textContent = data[i].val;
     c.className = 'cell auto-cell ' + (data[i].cls || '');
   });
 
-  updateSummary();
+  updateSummary(tabIdx);
 }
 
-// ── 테이블 초기 렌더링 (구조 생성, 이후엔 updateCalcCells만 호출) ──
-function renderTable() {
-  const tbody = document.getElementById('table-body');
+// ── tbody 렌더링 ───────────────────────────────────────────
+function renderTabTable(tabIdx) {
+  const useAuto = tabConfig[tabIdx].useAutoShipping;
+  const tbody = document.getElementById(`tbody-${tabIdx}`);
   tbody.innerHTML = '';
 
-  products.forEach(p => {
+  allProducts[tabIdx].forEach(p => {
     const tr = document.createElement('tr');
     tr.dataset.id = p.id;
 
@@ -466,27 +510,41 @@ function renderTable() {
       if (placeholder) input.placeholder = placeholder;
       input.addEventListener('input', () => {
         p[field] = input.value;
-        updateCalcCells(p.id);
+        updateCalcCells(tabIdx, p.id);
       });
       td.appendChild(input);
       return td;
     }
 
+    // 상품명
     const tdName = document.createElement('td');
     tdName.innerHTML = `<div class="cell cell-name">${p.name}</div>`;
-
     tr.appendChild(tdName);
+
+    // 입력 셀들
     tr.appendChild(makeTdInput('cost',   p.cost,   '', ''));
     tr.appendChild(makeTdInput('price',  p.price,  '제안가', 'bg-price'));
     tr.appendChild(makeTdInput('pack',   p.pack,   '', ''));
     tr.appendChild(makeTdInput('bottle', p.bottle, '', ''));
     tr.appendChild(makeTdInput('fee',    p.fee,    '', 'bg-fee'));
 
-    // 자동계산 셀 — 컬럼 순서: perPack, perBottle, feeAmt, afterFee, shipping, afterShip, perPackNet, marginPack, totalMargin, marginRate
-    const autoBgClasses = ['','','bg-fee','bg-fee','','','','bg-margin','bg-margin','bg-margin'];
-    for (let i = 0; i < 10; i++) {
+    // 배송비: 자동조회면 표시셀, 직접입력이면 입력셀
+    if (useAuto) {
+      const tdShip = document.createElement('td');
+      const div = document.createElement('div');
+      div.className = 'cell auto-ship-cell';
+      div.textContent = '—';
+      tdShip.appendChild(div);
+      tr.appendChild(tdShip);
+    } else {
+      tr.appendChild(makeTdInput('shipping', p.shipping, '배송비', ''));
+    }
+
+    // 자동계산 셀 9개: perPack, perBottle, feeAmt, afterFee, afterShip, perPackNet, marginPack, totalMargin, marginRate
+    const autoBg = ['','','bg-fee','bg-fee','','','bg-margin','bg-margin','bg-margin'];
+    for (let i = 0; i < 9; i++) {
       const td = document.createElement('td');
-      if (autoBgClasses[i]) td.classList.add(autoBgClasses[i]);
+      if (autoBg[i]) td.classList.add(autoBg[i]);
       const div = document.createElement('div');
       div.className = 'cell auto-cell';
       div.textContent = '—';
@@ -500,35 +558,27 @@ function renderTable() {
     const btnDel = document.createElement('button');
     btnDel.className = 'btn-delete';
     btnDel.textContent = '✕';
-    btnDel.addEventListener('click', () => deleteProduct(p.id));
+    btnDel.addEventListener('click', () => {
+      allProducts[tabIdx] = allProducts[tabIdx].filter(x => x.id !== p.id);
+      renderTabTable(tabIdx);
+    });
     tdDel.appendChild(btnDel);
     tr.appendChild(tdDel);
 
     tbody.appendChild(tr);
-
-    if (p.price) updateCalcCells(p.id);
+    if (p.price) updateCalcCells(tabIdx, p.id);
   });
 
-  updateSummary();
-}
-
-function deleteProduct(id) {
-  products = products.filter(x => x.id !== id);
-  renderTable();
-}
-
-function resetAll() {
-  if (!confirm('모든 제안가를 초기화할까요?')) return;
-  products.forEach(p => p.price = '');
-  renderTable();
+  updateSummary(tabIdx);
 }
 
 // ── 요약 바 ───────────────────────────────────────────────
-function updateSummary() {
-  const results = products.map(p => calc(p)).filter(Boolean);
-  document.getElementById('sum-count').textContent = results.length;
+function updateSummary(tabIdx) {
+  const useAuto = tabConfig[tabIdx].useAutoShipping;
+  const results = allProducts[tabIdx].map(p => calc(p, useAuto)).filter(Boolean);
+  document.getElementById(`s${tabIdx}-count`).textContent = results.length;
   if (!results.length) {
-    ['sum-avg-rate','sum-best','sum-worst'].forEach(id => {
+    [`s${tabIdx}-rate`,`s${tabIdx}-best`,`s${tabIdx}-worst`].forEach(id => {
       document.getElementById(id).textContent = '—';
     });
     return;
@@ -538,15 +588,17 @@ function updateSummary() {
   const avg     = rates.reduce((a,b) => a+b, 0) / rates.length;
   const best    = Math.max(...margins);
   const worst   = Math.min(...margins);
-  document.getElementById('sum-avg-rate').textContent = fmtRate(avg);
-  document.getElementById('sum-best').textContent = (best >= 0 ? '+' : '') + fmt(best) + '₩';
-  document.getElementById('sum-worst').textContent = (worst >= 0 ? '+' : '') + fmt(worst) + '₩';
+  document.getElementById(`s${tabIdx}-rate`).textContent  = fmtRate(avg);
+  document.getElementById(`s${tabIdx}-best`).textContent  = (best  >= 0 ? '+' : '') + fmt(best)  + '₩';
+  document.getElementById(`s${tabIdx}-worst`).textContent = (worst >= 0 ? '+' : '') + fmt(worst) + '₩';
 }
 
-// ── 배송비 패널 ───────────────────────────────────────────
-function renderShipping() {
-  const grid = document.getElementById('shipping-grid');
-  grid.innerHTML = '';
+// ── 배송비 패널 (탭0) ─────────────────────────────────────
+function renderShippingPanel() {
+  const body = document.getElementById('ship-body-0');
+  body.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'shipping-grid';
   shippingTable.forEach((s, i) => {
     const div = document.createElement('div');
     div.className = 'shipping-item';
@@ -557,22 +609,42 @@ function renderShipping() {
     input.value = s.fee;
     input.addEventListener('change', () => {
       shippingTable[i].fee = parseFloat(input.value) || 0;
-      products.forEach(p => updateCalcCells(p.id));
+      allProducts[0].forEach(p => updateCalcCells(0, p.id));
     });
     div.appendChild(label);
     div.appendChild(input);
     grid.appendChild(div);
   });
+  body.appendChild(grid);
 }
 
-let panelOpen = false;
-function togglePanel() {
-  panelOpen = !panelOpen;
-  document.getElementById('panel-body').classList.toggle('hidden', !panelOpen);
-  document.getElementById('panel-toggle').textContent = panelOpen ? '▲ 접기' : '▼ 펼치기';
+function toggleShipping(tabIdx) {
+  shipPanelOpen = !shipPanelOpen;
+  document.getElementById(`ship-body-${tabIdx}`).classList.toggle('hidden', !shipPanelOpen);
+  document.getElementById(`ship-toggle-${tabIdx}`).textContent = shipPanelOpen ? '▲ 접기' : '▼ 펼치기';
 }
 
-// ── 모달 ──────────────────────────────────────────────────
+// ── 탭 전환 ───────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTab = parseInt(btn.dataset.tab);
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`.tab-panel[data-panel="${activeTab}"]`).classList.add('active');
+  });
+});
+
+// ── 초기화 ────────────────────────────────────────────────
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('현재 탭의 모든 입력값을 초기화할까요?')) return;
+  allProducts[activeTab].forEach(p => { p.price = ''; p.shipping = ''; });
+  renderTabTable(activeTab);
+});
+
+// ── 상품 추가 모달 ─────────────────────────────────────────
+document.getElementById('btn-add').addEventListener('click', () => openModal());
+
 function openModal() {
   document.getElementById('modal').classList.add('active');
   document.getElementById('new-name').focus();
@@ -590,17 +662,20 @@ function addProduct() {
   const bottle = parseFloat(document.getElementById('new-bottle').value) || 1;
   const fee    = parseFloat(document.getElementById('new-fee').value)    || 12;
   if (!name) { alert('상품명을 입력해주세요'); return; }
-  products.push({ id: nextId++, name, cost, pack, bottle, fee, price: '' });
+  allProducts[activeTab].push({ id: nextId++, name, cost, pack, bottle, fee, price: '', shipping: '' });
   closeModal();
-  renderTable();
+  renderTabTable(activeTab);
 }
 document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
 // ── 초기 실행 ─────────────────────────────────────────────
-renderShipping();
-renderTable();
+[0,1,2,3].forEach(i => {
+  buildThead(i);
+  renderTabTable(i);
+});
+renderShippingPanel();
 </script>
 </body>
 </html>
