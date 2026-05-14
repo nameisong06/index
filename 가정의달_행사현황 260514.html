@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가정의 달 행사 현황</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #F7F6F3; color: #1A1A18; padding: 48px; }
+  .page { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 48px; }
+
+  .report-title { font-size: 22px; font-weight: 500; color: #1A1A18; letter-spacing: -0.3px; margin-bottom: 28px; }
+
+  .summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .summary-card { background: #F5F5F3; border-radius: 10px; padding: 16px 20px; }
+  .summary-label { font-size: 11px; color: #5F5F5A; margin-bottom: 6px; }
+  .summary-value { font-size: 24px; font-weight: 500; color: #1A1A18; }
+
+  .section-label { font-size: 11px; font-weight: 500; color: #5F5F5A; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 14px; }
+
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+
+  .chart-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 20px 22px; }
+  .chart-wrap { position: relative; width: 100%; height: 240px; }
+
+  .order-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+  .order-table th { font-size: 10px; font-weight: 500; color: #888780; letter-spacing: 0.4px; text-transform: uppercase; padding: 7px 10px; border-top: 1px solid #E8E8E5; border-bottom: 1px solid #E8E8E5; text-align: left; }
+  .order-table th:last-child { text-align: right; }
+  .order-table td { font-size: 12px; padding: 9px 10px; border-bottom: 0.5px solid #E8E8E5; color: #5F5F5A; }
+  .order-table td:first-child { color: #1A1A18; }
+  .order-table td:last-child { text-align: right; font-weight: 500; color: #185FA5; }
+  .order-table tr:last-child td { border-bottom: none; }
+
+  .proposal-wrap { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 20px 22px; }
+  .proposal-list { display: flex; flex-direction: column; gap: 10px; }
+  .proposal-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .proposal-card.featured { border: 1.5px solid #378ADD; }
+  .proposal-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+  .icon-blue { background: #E6F1FB; }
+  .icon-green { background: #E1F5EE; }
+  .icon-amber { background: #FAEEDA; }
+  .proposal-content { flex: 1; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 10px; margin-bottom: 5px; }
+  .badge-blue { background: #E6F1FB; color: #0C447C; }
+  .badge-green { background: #E1F5EE; color: #085041; }
+  .badge-amber { background: #FAEEDA; color: #633806; }
+  .proposal-title { font-size: 12px; font-weight: 500; color: #1A1A18; margin-bottom: 4px; }
+  .proposal-body { font-size: 11px; color: #5F5F5A; line-height: 1.7; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; border-radius: 0; padding: 32px; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="report-title">가정의 달 행사 현황</div>
+
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="summary-label">총 주문건수</div>
+      <div class="summary-value">26건</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">집계 기간</div>
+      <div class="summary-value" style="font-size:18px;">26/05/10 – 05/13</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="chart-card">
+      <div class="section-label">상품별 주문건수</div>
+      <div class="chart-wrap">
+        <canvas id="barChart"></canvas>
+      </div>
+      <table class="order-table">
+        <thead>
+          <tr><th>상품명</th><th>주문건수</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>12L 2병 + 200mL 30병</td><td>12건</td></tr>
+          <tr><td>쌀 1.8kg + 생수 2L 6병</td><td>5건</td></tr>
+          <tr><td>12L 2병 + 2L 6병</td><td>4건</td></tr>
+          <tr><td>혼합15곡 1.7kg + 생수 2L 6병</td><td>2건</td></tr>
+          <tr><td>쌀튀밥 1L 8병 + 2L 6병</td><td>2건</td></tr>
+          <tr><td>쌀튀밥 1L 4병 + 200mL 30병</td><td>1건</td></tr>
+          <tr><td>쌀튀밥 1L 8병 + 500mL 20병</td><td>0건</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="proposal-wrap">
+      <div class="section-label">운영 개선 제안</div>
+      <div class="proposal-list">
+        <div class="proposal-card featured">
+          <div class="proposal-icon icon-green">📌</div>
+          <div class="proposal-content">
+            <div class="badge badge-green">유지</div>
+            <div class="proposal-title">12L 증정 상품 — 타임딜 노출 유지</div>
+            <div class="proposal-body">12L 2병+200mL(12건), 12L 2병+2L(4건)로 전체 주문의 61.5% 점유. 타임딜 핵심 상품으로 현행 유지 권장.</div>
+          </div>
+        </div>
+        <div class="proposal-card featured">
+          <div class="proposal-icon icon-blue">⭐</div>
+          <div class="proposal-content">
+            <div class="badge badge-blue">노출 변경</div>
+            <div class="proposal-title">가정의달 세트 — 인기상품 섹션 또는 팝업 전환</div>
+            <div class="proposal-body">타임딜 내 가정의달 세트와 12L 증정 상품이 함께 노출되어 클릭 분산 우려. 인기상품 섹션 이동 또는 팝업으로 전용 프로모션 페이지 연결 검토.</div>
+          </div>
+        </div>
+        <div class="proposal-card">
+          <div class="proposal-icon icon-amber">📱</div>
+          <div class="proposal-content">
+            <div class="badge badge-amber">신규 제작</div>
+            <div class="proposal-title">가정의달 모바일 배너 제작</div>
+            <div class="proposal-body">현재 가정의달 팝업만 운영 중에 있어 가정의달 모바일 배너 제작 제안.</div>
+          </div>
+        </div>
+        <div class="proposal-card">
+          <div class="proposal-icon icon-blue">📊</div>
+          <div class="proposal-content">
+            <div class="badge badge-blue">모니터링</div>
+            <div class="proposal-title">세트 상품 주문 추이 지속 관찰</div>
+            <div class="proposal-body">혼합15곡·쌀튀밥 세트 주문건수는 현재 0~2건 수준. 주문 변화 추이 확인 후 구성 변경 등 논의 필요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: ['12L 2병+200mL 30병','쌀 1.8kg+2L 6병','12L 2병+2L 6병','혼합15곡+2L 6병','쌀튀밥 8병+2L 6병','쌀튀밥 4병+200mL 30병','쌀튀밥 8병+500mL 20병'],
+    datasets: [{ data: [12,5,4,2,2,1,0], backgroundColor: '#185FA5', borderRadius: 4, borderSkipped: false }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw}건` } } },
+    scales: {
+      x: { ticks: { font: { size: 10, family: 'Noto Sans KR' }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+      y: { ticks: { font: { size: 10, family: 'Noto Sans KR' } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
