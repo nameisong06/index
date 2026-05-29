@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12L / 15L / 18.9L 판매 비교 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #1a1917;
+  --text2: #6b6a65;
+  --text3: #9e9c96;
+  --blue: #1a5fb4;
+  --blue-bg: #ddeeff;
+  --blue-mid: #4a90d9;
+  --green: #2d6a2d;
+  --green-bg: #e0f0dc;
+  --amber: #7a4800;
+  --amber-bg: #fdf0d8;
+  --red: #a0281e;
+  --red-bg: #fce8e6;
+  --gray-bg: #ebebeb;
+  --teal: #0d5c4e;
+  --teal-bg: #d8f2ec;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.page { max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; }
+
+/* Header */
+.header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border2); }
+.header-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+.header-sub { font-size: 12px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+.badges { display: flex; gap: 6px; align-items: center; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+.badge-gray { background: var(--gray-bg); color: #444; }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+
+/* Section label */
+.sec { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+
+/* Card */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+
+/* KPI */
+.kpi-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 14px; }
+.kpi { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px 16px; }
+.kpi-lbl { font-size: 11px; color: var(--text2); margin-bottom: 5px; line-height: 1.35; }
+.kpi-val { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+.kpi-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* Note */
+.note { font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+/* ===== 전환현황 가로 ===== */
+.conv-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 6px; }
+.conv-box { padding: 14px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between; }
+.conv-label { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.conv-desc { font-size: 10px; opacity: .75; }
+.conv-num { font-size: 26px; font-weight: 600; letter-spacing: -1px; }
+.conv-pct { font-size: 11px; font-weight: 500; margin-left: 2px; opacity: .8; }
+
+/* ===== 업소/개인 가로 ===== */
+.biz-section { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+.biz-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.biz-total-box { text-align: center; padding: 14px 10px; border-radius: var(--radius-sm); }
+.biz-bars-wrap { }
+.biz-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; cursor: default; border-radius: 4px; padding: 3px 4px; transition: background .15s; }
+.biz-bar-row.clickable { cursor: pointer; }
+.biz-bar-row.clickable:hover { background: var(--surface2); }
+.biz-lbl { font-size: 11px; color: var(--text2); width: 76px; text-align: right; flex-shrink: 0; }
+.biz-bg { flex: 1; height: 14px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.biz-fill { height: 100%; border-radius: 3px; }
+.biz-cnt { font-size: 11px; font-weight: 600; width: 26px; flex-shrink: 0; }
+
+/* ===== 채널 섹션 (도넛+평균+전환구성+인사이트 세로) ===== */
+.channel-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+.channel-left {}
+.channel-donut-wrap { position: relative; height: 180px; margin-bottom: 14px; }
+.ch-avg-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.ch-avg-box { text-align: center; padding: 8px 4px; border-radius: var(--radius-sm); }
+.ch-avg-name { font-size: 10px; margin-bottom: 3px; }
+.ch-avg-val { font-size: 18px; font-weight: 600; }
+.channel-right { display: flex; flex-direction: column; gap: 14px; }
+
+/* 채널 전환 구성 */
+.chconv-wrap { position: relative; height: 160px; }
+
+/* 채널 인사이트 — 채널별 가로 행 레이아웃 */
+.ch-insight-list { display: flex; flex-direction: column; gap: 8px; }
+.ch-row { border-radius: var(--radius-sm); padding: 12px 16px; display: grid; grid-template-columns: 160px 1fr; gap: 16px; align-items: center; }
+.ch-row-left { display: flex; flex-direction: column; gap: 8px; }
+.ch-row-head { display: flex; align-items: center; gap: 8px; }
+.ch-card-name { font-size: 14px; font-weight: 600; }
+.ch-card-cnt { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.ch-meta-row { display: flex; gap: 12px; }
+.ch-meta-item { text-align: center; }
+.ch-meta-lbl { font-size: 9px; opacity: .7; }
+.ch-meta-val { font-size: 13px; font-weight: 600; }
+.ch-insight-text { font-size: 11.5px; line-height: 1.65; }
+
+/* ===== 전환 패턴 섹션 ===== */
+.pattern-kpi { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
+.p-stat { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; text-align: center; }
+.p-lbl { font-size: 10px; color: var(--text2); margin-bottom: 4px; line-height: 1.35; }
+.p-val { font-size: 18px; font-weight: 600; }
+.p-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+.pattern-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+.pattern-details { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.pd-box { border-radius: var(--radius-sm); padding: 12px 14px; }
+.pd-title { font-size: 11px; font-weight: 600; margin-bottom: 7px; }
+.pd-row { font-size: 11px; line-height: 1.75; }
+
+.insight-summary { padding: 14px 18px; background: var(--blue-bg); border-radius: var(--radius-sm); border-left: 3px solid var(--blue); }
+.insight-summary-title { font-size: 12px; font-weight: 600; color: var(--blue); margin-bottom: 5px; }
+.insight-summary-body { font-size: 12px; color: #1a3a6e; line-height: 1.7; }
+
+/* 섹션 간격 */
+.section { margin-bottom: 14px; }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 11px; color: var(--text2); }
+.ld { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-box { background: var(--surface); border-radius: var(--radius); width: min(540px,92vw); max-height: 74vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.18); transform: translateY(12px); transition: transform .2s; }
+.modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 14px; font-weight: 600; }
+.modal-close { font-size: 20px; color: var(--text3); cursor: pointer; line-height: 1; padding: 0 2px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { overflow-y: auto; padding: 4px 0; }
+.modal-row { padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.modal-row:last-child { border-bottom: none; }
+.modal-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.modal-name { font-size: 12px; font-weight: 600; }
+.modal-ch { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+.modal-addr { font-size: 11px; color: var(--text2); }
+.modal-prod { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(3,1fr); }
+  .conv-row { grid-template-columns: repeat(2,1fr); }
+  .biz-section { grid-template-columns: 1fr; }
+  .channel-layout { grid-template-columns: 1fr; }
+  .ch-row { grid-template-columns: 1fr; }
+  .pattern-details { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .pattern-kpi { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">12L / 15L / 18.9L 판매 비교</div>
+      <div class="header-sub">18.9L · PET (2026.03–05) &nbsp;|&nbsp; 12L / 15L (2026.05.08–29, 3주)</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-gray">18.9L 기존</span>
+      <span class="badge badge-green">PET 기존</span>
+      <span class="badge badge-blue">12L/15L 신규</span>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="section">
+    <div class="sec">핵심 지표</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-lbl">12L/15L 총 주문건수</div><div class="kpi-val" style="color:var(--blue)">275건</div><div class="kpi-sub">3주(5/8~5/29) 누적</div></div>
+      <div class="kpi"><div class="kpi-lbl">12L 출고량</div><div class="kpi-val" style="color:var(--blue)">583통</div><div class="kpi-sub">주문당 평균 2.2통</div></div>
+      <div class="kpi"><div class="kpi-lbl">15L 출고량</div><div class="kpi-val" style="color:var(--blue)">45통</div><div class="kpi-sub">합계 628통 출고</div></div>
+      <div class="kpi"><div class="kpi-lbl">완전 신규 고객</div><div class="kpi-val" style="color:var(--green)">144건</div><div class="kpi-sub">52.4% 신규 유입</div></div>
+      <div class="kpi"><div class="kpi-lbl">기존 고객 전환</div><div class="kpi-val" style="color:var(--amber)">131건</div><div class="kpi-sub">47.6% 전환</div></div>
+    </div>
+  </div>
+
+  <!-- 신규고객 전환 현황 (가로) -->
+  <div class="section card">
+    <div class="sec">🔄 신규 고객 전환 현황</div>
+    <div class="conv-row">
+      <div class="conv-box" style="background:var(--green-bg)">
+        <div><div class="conv-label" style="color:var(--green)">완전 신규</div><div class="conv-desc" style="color:var(--green)">이전 구매 이력 없음</div></div>
+        <div style="text-align:right"><span class="conv-num" style="color:var(--green)">144</span><span class="conv-pct" style="color:var(--green)">52.4%</span></div>
+      </div>
+      <div class="conv-box" style="background:var(--blue-bg)">
+        <div><div class="conv-label" style="color:var(--blue)">18.9L 전환</div><div class="conv-desc" style="color:var(--blue)">18.9L만 이용 → 신상품</div></div>
+        <div style="text-align:right"><span class="conv-num" style="color:var(--blue)">21</span><span class="conv-pct" style="color:var(--blue)">7.6%</span></div>
+      </div>
+      <div class="conv-box" style="background:var(--gray-bg)">
+        <div><div class="conv-label" style="color:#333">PET 전환</div><div class="conv-desc" style="color:#666">PET만 이용 → 신상품</div></div>
+        <div style="text-align:right"><span class="conv-num" style="color:#333">46</span><span class="conv-pct" style="color:#666">16.7%</span></div>
+      </div>
+      <div class="conv-box" style="background:var(--amber-bg)">
+        <div><div class="conv-label" style="color:var(--amber)">18.9L+PET 전환</div><div class="conv-desc" style="color:var(--amber)">두 상품 모두 구매 이력</div></div>
+        <div style="text-align:right"><span class="conv-num" style="color:var(--amber)">37</span><span class="conv-pct" style="color:var(--amber)">13.5%</span></div>
+      </div>
+    </div>
+    <div class="note">* 주소 매칭 기준 — 정확도 참고용</div>
+  </div>
+
+  <!-- 업소/개인 분류 (가로) -->
+  <div class="section card">
+    <div class="sec">🏪 업소 / 개인 분류</div>
+    <div class="biz-section">
+      <div>
+        <div class="biz-totals" style="margin-bottom:12px">
+          <div class="biz-total-box" style="background:var(--blue-bg)">
+            <div style="font-size:10px;color:var(--blue);margin-bottom:3px">업소</div>
+            <div style="font-size:28px;font-weight:600;color:#0d3d80;letter-spacing:-1px">133</div>
+            <div style="font-size:10px;color:var(--blue)">48.4%</div>
+          </div>
+          <div class="biz-total-box" style="background:var(--gray-bg)">
+            <div style="font-size:10px;color:#555;margin-bottom:3px">개인</div>
+            <div style="font-size:28px;font-weight:600;color:#222;letter-spacing:-1px">142</div>
+            <div style="font-size:10px;color:#666">51.6%</div>
+          </div>
+        </div>
+        <div style="position:relative;height:130px">
+          <canvas id="bizDonut" role="img" aria-label="업소 유형 도넛 차트"></canvas>
+        </div>
+      </div>
+      <div class="biz-bars-wrap">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px">업소 유형 세분류 <span style="font-weight:400;color:var(--text3);font-size:10px">— 기타업소 클릭 시 목록 보기</span></div>
+        <div id="bizBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 판매채널 + 전환구성 + 인사이트 -->
+  <div class="section card">
+    <div class="channel-layout">
+      <!-- 왼쪽: 도넛 + 평균 -->
+      <div>
+        <div class="sec">🛒 판매 채널 분포</div>
+        <div class="legend">
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#1a5fb4"></span>스파클몰</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#c01c28"></span>쿠팡</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#1a7c5a"></span>네이버</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#c07000"></span>고객센터</span>
+        </div>
+        <div class="channel-donut-wrap">
+          <canvas id="channelDonut" role="img" aria-label="채널별 주문건수 도넛 차트"></canvas>
+        </div>
+        <div class="sec" style="margin-top:4px">채널별 평균 구매량 (통/건)</div>
+        <div class="ch-avg-grid">
+          <div class="ch-avg-box" style="background:var(--blue-bg)"><div class="ch-avg-name" style="color:var(--blue)">스파클몰</div><div class="ch-avg-val" style="color:#0d3d80">2.3</div></div>
+          <div class="ch-avg-box" style="background:var(--red-bg)"><div class="ch-avg-name" style="color:var(--red)">쿠팡</div><div class="ch-avg-val" style="color:var(--red)">2.2</div></div>
+          <div class="ch-avg-box" style="background:var(--teal-bg)"><div class="ch-avg-name" style="color:var(--teal)">네이버</div><div class="ch-avg-val" style="color:var(--teal)">2.1</div></div>
+          <div class="ch-avg-box" style="background:var(--amber-bg)"><div class="ch-avg-name" style="color:var(--amber)">고객센터</div><div class="ch-avg-val" style="color:var(--amber)">2.3</div></div>
+        </div>
+      </div>
+      <!-- 오른쪽: 전환구성 + 인사이트 -->
+      <div class="channel-right">
+        <div>
+          <div class="sec">📊 채널별 전환 / 신규 구성</div>
+          <div class="legend">
+            <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#1a5fb4"></span>18.9L 전환</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#2d6a2d"></span>PET 전환</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#c07000"></span>18.9L+PET</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#c8c6be"></span>완전 신규</span>
+          </div>
+          <div class="chconv-wrap">
+            <canvas id="chConvBar" role="img" aria-label="채널별 전환 구성 누적 막대 차트"></canvas>
+          </div>
+        </div>
+        <div>
+          <div class="sec">💡 채널별 인사이트</div>
+          <div class="ch-insight-list">
+
+            <!-- 스파클몰 -->
+            <div class="ch-row" style="background:var(--blue-bg)">
+              <div class="ch-row-left">
+                <div class="ch-row-head">
+                  <span class="ch-card-name" style="color:#0d3d80">스파클몰</span>
+                  <span class="ch-card-cnt" style="background:#1a5fb4;color:#fff">152건 · 55%</span>
+                </div>
+                <div class="ch-meta-row" style="color:#0d3d80">
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">평균수량</div><div class="ch-meta-val">2.3통</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">업소비율</div><div class="ch-meta-val">47%</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">신규비율</div><div class="ch-meta-val">34%</div></div>
+                </div>
+              </div>
+              <div class="ch-insight-text" style="color:#1a3a6e">전체 채널 중 주문 비중이 가장 높고 기존 고객 전환의 핵심 채널. 18.9L 전환 62건·PET 전환 71건으로 두 유형 모두 스파클몰을 통해 신상품으로 이동. 15L 판매(42통 전량)가 스파클몰에 집중돼 있어 자사몰 방문 고객의 충성도가 높음. 신규 유입(34%)보다 기존 고객 록인 비율이 압도적으로 높아 재구매 관리에 유리한 채널.</div>
+            </div>
+
+            <!-- 쿠팡 -->
+            <div class="ch-row" style="background:var(--red-bg)">
+              <div class="ch-row-left">
+                <div class="ch-row-head">
+                  <span class="ch-card-name" style="color:#6b0f0a">쿠팡</span>
+                  <span class="ch-card-cnt" style="background:#c01c28;color:#fff">76건 · 28%</span>
+                </div>
+                <div class="ch-meta-row" style="color:#6b0f0a">
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">평균수량</div><div class="ch-meta-val">2.2통</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">업소비율</div><div class="ch-meta-val">53%</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">신규비율</div><div class="ch-meta-val">89%</div></div>
+                </div>
+              </div>
+              <div class="ch-insight-text" style="color:#6b0f0a">신규 비율 89%로 완전한 신시장 개척 채널. 기존 18.9L·PET 이용 고객 전환은 극히 적어(8건), 쿠팡 유입 고객 대부분이 스파클 브랜드 첫 접촉자임. 업소 비율 53%로 가장 높아 사무실·소규모 업장의 신규 구매가 두드러짐. 12L 전용으로 판매되며 15L 주문 없음. 신규 고객 모수 확대 측면에서 가장 효율적인 채널.</div>
+            </div>
+
+            <!-- 네이버 -->
+            <div class="ch-row" style="background:var(--teal-bg)">
+              <div class="ch-row-left">
+                <div class="ch-row-head">
+                  <span class="ch-card-name" style="color:var(--teal)">네이버</span>
+                  <span class="ch-card-cnt" style="background:#1a7c5a;color:#fff">35건 · 13%</span>
+                </div>
+                <div class="ch-meta-row" style="color:var(--teal)">
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">평균수량</div><div class="ch-meta-val">2.1통</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">업소비율</div><div class="ch-meta-val">46%</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">신규비율</div><div class="ch-meta-val">63%</div></div>
+                </div>
+              </div>
+              <div class="ch-insight-text" style="color:#0d4435">신규 63% + 18.9L 전환 12건으로 신규 유입과 기존 전환이 균형 있게 혼재. 쿠팡과 달리 18.9L에서 넘어온 고객 비율(34%)이 의미 있는 수준으로 네이버 검색·광고를 통해 기존 생수 구매자가 유입되는 패턴. 건당 평균 2.1통으로 채널 중 가장 낮아 소용량·체험 목적 첫 구매가 많을 것으로 추정.</div>
+            </div>
+
+            <!-- 고객센터 -->
+            <div class="ch-row" style="background:var(--amber-bg)">
+              <div class="ch-row-left">
+                <div class="ch-row-head">
+                  <span class="ch-card-name" style="color:var(--amber)">고객센터</span>
+                  <span class="ch-card-cnt" style="background:#c07000;color:#fff">12건 · 4%</span>
+                </div>
+                <div class="ch-meta-row" style="color:var(--amber)">
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">평균수량</div><div class="ch-meta-val">2.3통</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">업소비율</div><div class="ch-meta-val">50%</div></div>
+                  <div class="ch-meta-item"><div class="ch-meta-lbl">신규비율</div><div class="ch-meta-val">17%</div></div>
+                </div>
+              </div>
+              <div class="ch-insight-text" style="color:#4a3000">건수는 적지만 신규 비율 17%로 대부분 기존 고객의 직접 상담 전환. PET 전환(10건)이 18.9L 전환(3건)보다 3배 이상 많아 PET 정기 구매 고객이 상담을 통해 신상품으로 스위치하는 패턴이 명확. 12L+15L 혼합 구매가 나타나며 건당 평균 2.3통으로 스파클몰과 동일하게 높음.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18.9L → 12L 전환 패턴 -->
+  <div class="section card">
+    <div class="sec">🔍 18.9L → 12L 전환 패턴 총체적 분석</div>
+    <div class="pattern-kpi">
+      <div class="p-stat"><div class="p-lbl">전환 고객 수</div><div class="p-val" style="color:var(--blue)">79명</div><div class="p-sub">주문 85건</div></div>
+      <div class="p-stat"><div class="p-lbl">과거 18.9L 총 구매량</div><div class="p-val">350통</div><div class="p-sub">3개월간</div></div>
+      <div class="p-stat"><div class="p-lbl">인당 평균 과거 주문</div><div class="p-val">2.2건</div><div class="p-sub">인당 4.4통 구매</div></div>
+      <div class="p-stat"><div class="p-lbl">전환 후 평균 구매량</div><div class="p-val" style="color:var(--green)">2.4통</div><div class="p-sub">비전환 대비 +9%</div></div>
+      <div class="p-stat"><div class="p-lbl">5월 18.9L 구매 감소</div><div class="p-val" style="color:var(--red)">-58%</div><div class="p-sub">3월 143통 → 5월 61통</div></div>
+    </div>
+
+    <div class="pattern-charts">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">전환 고객의 18.9L 과거 주문 빈도</div>
+        <div class="legend"><span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#1a5fb4"></span>고객 수</span></div>
+        <div style="position:relative;height:170px"><canvas id="freqChart" role="img" aria-label="전환 고객 18.9L 주문 빈도"></canvas></div>
+        <div class="note">1–2회 주문한 라이트유저(57명)가 전환의 주축. 12회 헤비유저도 전환함</div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">전환 고객 12L 선택 상품구성</div>
+        <div class="legend"><span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#4a90d9"></span>주문건수</span></div>
+        <div style="position:relative;height:170px"><canvas id="prodChart" role="img" aria-label="전환 고객 상품구성별 주문건수"></canvas></div>
+        <div class="note">1팩 소량 체험 구매가 가장 많고, 2팩+200mL 세트 구성도 19건으로 인기</div>
+      </div>
+    </div>
+
+    <div class="pattern-details">
+      <div class="pd-box" style="background:var(--blue-bg)">
+        <div class="pd-title" style="color:#0d3d80">📍 전환 고객 주요 채널</div>
+        <div class="pd-row" style="color:#1a3a6e">
+          스파클몰 <strong>60건</strong> (71%)<br>
+          네이버 <strong>12건</strong> (14%)<br>
+          쿠팡 <strong>8건</strong> (9%)<br>
+          고객센터 <strong>3건</strong> (4%)
+        </div>
+        <div class="note" style="color:#2a5ab0;margin-top:6px">전환 고객의 71%가 자사몰 통해 재구매 — 스파클몰이 전환 허브 역할</div>
+      </div>
+      <div class="pd-box" style="background:var(--amber-bg)">
+        <div class="pd-title" style="color:var(--amber)">🏢 전환 고객 업소/개인 비율</div>
+        <div style="display:flex;gap:8px;margin:8px 0">
+          <div style="flex:1;text-align:center;background:#fdd890;border-radius:6px;padding:8px">
+            <div style="font-size:10px;color:var(--amber)">업소</div>
+            <div style="font-size:22px;font-weight:600;color:#4a3000">48</div>
+            <div style="font-size:10px;color:var(--amber)">56%</div>
+          </div>
+          <div style="flex:1;text-align:center;background:#faeac0;border-radius:6px;padding:8px">
+            <div style="font-size:10px;color:#7a6000">개인</div>
+            <div style="font-size:22px;font-weight:600;color:#4a3000">37</div>
+            <div style="font-size:10px;color:#7a6000">44%</div>
+          </div>
+        </div>
+        <div class="note" style="color:var(--amber)">업소 전환 비율이 높음 — 취급 편의성으로 갈아타는 패턴 추정</div>
+      </div>
+      <div class="pd-box" style="background:var(--teal-bg)">
+        <div class="pd-title" style="color:var(--teal)">📌 전환 고객 주요 지역</div>
+        <div class="pd-row" style="color:#0d4435">
+          서울 <strong>22건</strong> (26%)<br>
+          경기 <strong>29건</strong> (34%)<br>
+          인천·부산·울산 <strong>13건</strong> (15%)<br>
+          기타 지역 <strong>21건</strong>
+        </div>
+        <div class="note" style="color:var(--teal);margin-top:6px">수도권 집중(60%) — 배송 인프라 기반 전환 가속 가능</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div id="otherModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">기타업소 목록 (40건)</span>
+      <span class="modal-close" onclick="closeModal()">×</span>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ===== 기타업소 데이터 =====
+const otherList = [
+  {name:'생수 안집',addr:'경남 창원시 의창구 동읍 덕산길 74-8',prod:'12L(4팩)',ch:'쿠팡'},
+  {name:'나무정원',addr:'전남 여수시 좌수영로 774-9',prod:'12L(3팩)',ch:'쿠팡'},
+  {name:'동성골프연습장 내 상가(세차장)',addr:'경기 평택시 서동대로 3844',prod:'12L(2팩)',ch:'쿠팡'},
+  {name:'상가 sm편한몸',addr:'경남 진주시 진양호로 221',prod:'12L(1팩)',ch:'네이버'},
+  {name:'일산 디엠시티 스카이뷰 상가동',addr:'경기 고양시 일산서구 대화동 2307-12',prod:'12L(2팩)',ch:'쿠팡'},
+  {name:'ARIA GOLD',addr:'경기 부천시 원미구 부천로 225-16',prod:'12L(2팩)',ch:'쿠팡'},
+  {name:'금석건설',addr:'강원 춘천시 삭주로80번길 25-13',prod:'12L(2팩)+200mL',ch:'스파클몰'},
+  {name:'신동산화원',addr:'경기 안산시 단원구 중앙대로 358',prod:'12L(1팩)',ch:'스파클몰'},
+  {name:'아진트랜스',addr:'경남 창원시 진해구 가주동 409',prod:'12L(1팩)',ch:'스파클몰'},
+  {name:'올뉴인테리어',addr:'경기 수원시 권선구 호매실동 470-8',prod:'12L(1팩)',ch:'스파클몰'},
+  {name:'신영플라스틱',addr:'경기 김포시 대곶면 율마로135번길 39',prod:'12L(2팩)+200mL',ch:'스파클몰'},
+  {name:'한화에어로스페이스 경비실',addr:'경남 창원시 성산구 공단로 799',prod:'15L(10팩)',ch:'스파클몰'},
+  {name:'우림블루나인비즈니스센터 A동 1403호',addr:'서울 강서구 양천로 583 (3건)',prod:'12L/15L 복합',ch:'고객센터'},
+  {name:'s1212호 (소규모 공방 추정)',addr:'경기 성남시 중원구 사기막골로62번길 33',prod:'12L(2팩)+200mL',ch:'스파클몰'},
+  {name:'건곤214',addr:'경기 수원시 장안구 연무동 214-2',prod:'12L(4팩)',ch:'네이버'},
+  {name:'신촌리 농가/시설',addr:'강원 춘천시 동내면 신촌리 551-2',prod:'12L(10팩)',ch:'쿠팡'},
+  {name:'기타 아파트 상가·소규모 업장 (이하 24건)',addr:'주거복합·소규모 업소',prod:'12L(1-2팩)',ch:'다양'},
+];
+
+function openOtherModal() {
+  const body = document.getElementById('modalBody');
+  const chStyle = {
+    '쿠팡':  {bg:'#fce8e6',color:'#6b0f0a'},
+    '스파클몰': {bg:'#ddeeff',color:'#0d3d80'},
+    '네이버': {bg:'#d8f2ec',color:'#0d5c4e'},
+    '고객센터': {bg:'#fdf0d8',color:'#7a4800'},
+    '다양':   {bg:'#ebebeb',color:'#444'},
+  };
+  body.innerHTML = otherList.map(r => {
+    const s = chStyle[r.ch] || chStyle['다양'];
+    return `<div class="modal-row">
+      <div class="modal-row-top">
+        <span class="modal-name">${r.name}</span>
+        <span class="modal-ch" style="background:${s.bg};color:${s.color}">${r.ch}</span>
+      </div>
+      <div class="modal-addr">${r.addr}</div>
+      <div class="modal-prod">${r.prod}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('otherModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('otherModal').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ===== 업소 바 차트 =====
+const bizData = [
+  {cat:'사무실/업무', cnt:65, color:'#1a5fb4'},
+  {cat:'기타업소',    cnt:40, color:'#888680', clickable:true},
+  {cat:'학원/교육',   cnt:14, color:'#4a90d9'},
+  {cat:'의료',       cnt:6,  color:'#1a7c5a'},
+  {cat:'공장/물류',   cnt:3,  color:'#2d6a2d'},
+  {cat:'카페/식음료', cnt:3,  color:'#c07000'},
+  {cat:'종교',       cnt:2,  color:'#c8c6be'},
+];
+const totalBiz = bizData.reduce((a,b)=>a+b.cnt,0);
+const bizBarsEl = document.getElementById('bizBars');
+bizData.forEach(d => {
+  const pct = Math.round(d.cnt/totalBiz*100);
+  const row = document.createElement('div');
+  row.className = 'biz-bar-row' + (d.clickable?' clickable':'');
+  row.title = d.clickable ? '클릭하여 목록 보기' : '';
+  row.innerHTML = `<div class="biz-lbl">${d.cat}</div>
+    <div class="biz-bg"><div class="biz-fill" style="width:${pct}%;background:${d.color}"></div></div>
+    <div class="biz-cnt" style="color:${d.color}">${d.cnt}</div>`;
+  if(d.clickable) row.addEventListener('click', openOtherModal);
+  bizBarsEl.appendChild(row);
+});
+
+// ===== Charts =====
+Chart.defaults.font.family = "'Pretendard','Apple SD Gothic Neo',sans-serif";
+
+new Chart(document.getElementById('bizDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: bizData.map(d=>d.cat),
+    datasets: [{ data: bizData.map(d=>d.cnt), backgroundColor: bizData.map(d=>d.color), borderWidth: 0 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.label}: ${c.formattedValue}건`}} }
+  }
+});
+
+new Chart(document.getElementById('channelDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['스파클몰','쿠팡','네이버','고객센터'],
+    datasets: [{ data:[152,76,35,12], backgroundColor:['#1a5fb4','#c01c28','#1a7c5a','#c07000'], borderWidth:0 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, cutout:'58%',
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.label}: ${c.formattedValue}건 (${Math.round(c.parsed/275*100)}%)`}} }
+  }
+});
+
+new Chart(document.getElementById('chConvBar'), {
+  type: 'bar',
+  data: {
+    labels: ['스파클몰','쿠팡','네이버','고객센터'],
+    datasets: [
+      { label:'18.9L 전환', data:[62,8,12,3],  backgroundColor:'#1a5fb4' },
+      { label:'PET 전환',   data:[71,0,2,10],  backgroundColor:'#2d6a2d' },
+      { label:'18.9L+PET', data:[37,0,1,0],   backgroundColor:'#c07000' },
+      { label:'완전 신규',  data:[52,68,22,2], backgroundColor:'#c8c6be' },
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ stacked:true, ticks:{font:{size:11}}, grid:{display:false} },
+      y:{ stacked:true, ticks:{font:{size:10}}, grid:{color:'rgba(0,0,0,0.05)'} }
+    }
+  }
+});
+
+new Chart(document.getElementById('freqChart'), {
+  type: 'bar',
+  data: {
+    labels: ['1회','2회','3회','4회','5회','6회','12회'],
+    datasets: [{ label:'고객수', data:[33,24,7,9,4,1,1], backgroundColor:'#1a5fb4', borderRadius:4 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ ticks:{font:{size:10}}, grid:{display:false} },
+      y:{ ticks:{font:{size:10}}, grid:{color:'rgba(0,0,0,0.05)'} }
+    }
+  }
+});
+
+new Chart(document.getElementById('prodChart'), {
+  type: 'bar',
+  data: {
+    labels: ['12L(1팩)','12L(2팩)\n+200mL','12L(2팩)','2L+12L\n(2팩)','12L(3팩)','12L(4팩)','12L(6팩)','12L(10팩)'],
+    datasets: [{ label:'주문건수', data:[24,19,18,9,4,3,2,2], backgroundColor:'#4a90d9', borderRadius:4 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ ticks:{font:{size:9}, maxRotation:30}, grid:{display:false} },
+      y:{ ticks:{font:{size:10}}, grid:{color:'rgba(0,0,0,0.05)'} }
+    }
+  }
+});
+</script>
+</body>
+</html>
